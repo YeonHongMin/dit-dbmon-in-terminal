@@ -116,7 +116,7 @@ java/oracle-bridge/
 ### CLI 인자 형식
 
 ```bash
-java -jar dit-dbms-bridge.jar \
+java -jar dit-dbms-monitor.jar \
     --dbms-type oracle \
     --command tui \
     --host 192.168.0.172 --port 1521 \
@@ -199,7 +199,7 @@ Main Loop (100ms poll):
 
 ```bash
 mvn clean package -f java/oracle-bridge/pom.xml
-# 출력: java/oracle-bridge/target/dit-dbms-bridge.jar (fat JAR)
+# 출력: java/oracle-bridge/target/dit-dbms-monitor.jar (fat JAR)
 ```
 
 ### 배포
@@ -207,8 +207,8 @@ mvn clean package -f java/oracle-bridge/pom.xml
 Fat JAR 단일 파일 복사:
 
 ```bash
-scp java/oracle-bridge/target/dit-dbms-bridge.jar user@server:~/
-ssh user@server 'java -jar dit-dbms-bridge.jar --dbms-type oracle --command tui ...'
+scp java/oracle-bridge/target/dit-dbms-monitor.jar user@server:~/
+ssh user@server 'java -jar dit-dbms-monitor.jar --dbms-type oracle --command tui ...'
 ```
 
 ### 런타임 디렉토리
@@ -216,7 +216,7 @@ ssh user@server 'java -jar dit-dbms-bridge.jar --dbms-type oracle --command tui 
 ```
 .dit/
 ├── bin/
-│   └── dit-dbms-bridge.jar     # 배포 JAR
+│   └── dit-dbms-monitor.jar     # 배포 JAR
 └── cycles/                      # 모니터링 사이클 아카이브
 ```
 

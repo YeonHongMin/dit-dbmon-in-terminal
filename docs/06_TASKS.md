@@ -37,17 +37,17 @@
 mvn clean package -f java/oracle-bridge/pom.xml
 
 # Oracle TUI
-java -jar java/oracle-bridge/target/dit-dbms-bridge.jar \
+java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
   --dbms-type oracle --command tui \
   --host 192.168.0.172 --port 1521 --service-name DEV \
   --user <monitoring user> --password <user password> --interval 6
 
 # Tibero TUI
-java -jar java/oracle-bridge/target/dit-dbms-bridge.jar \
+java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
   --dbms-type tibero --command tui \
   --host 192.168.0.153 --port 8629 --service-name TPROD \
   --user <monitoring user> --password <user password> --interval 6
 
 # CLI 테스트
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command health --host <host> --port 1521 --service-name <svc> --user <monitoring user> --password <user password>
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command health --host <host> --port 1521 --service-name <svc> --user <monitoring user> --password <user password>
 ```

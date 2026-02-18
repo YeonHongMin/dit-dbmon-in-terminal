@@ -16,14 +16,14 @@ SSH 터미널 환경에서 Oracle / Tibero DB를 실시간 모니터링하는 Ja
 mvn clean package -f java/oracle-bridge/pom.xml
 
 # Oracle TUI
-java -jar java/oracle-bridge/target/dit-dbms-bridge.jar \
+java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
   --dbms-type oracle --command tui \
   --host <db-host> --port 1521 \
   --service-name <service> \
   --user <monitoring user> --password <user password>
 
 # Tibero TUI
-java -jar java/oracle-bridge/target/dit-dbms-bridge.jar \
+java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
   --dbms-type tibero --command tui \
   --host <db-host> --port 8629 \
   --service-name <dbname> \
@@ -137,32 +137,32 @@ Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: 6s  Collect: 156ms
 # 공통 인자: --dbms-type oracle|tibero --host --port --service-name --user --password
 
 # 접속 확인
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command health ...
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command health ...
 
 # 메트릭 스냅샷 (JSON)
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command metrics ...
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command metrics ...
 
 # 활성 세션 목록 (JSON)
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command sessions ...
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command sessions ...
 
 # 대기 이벤트 (JSON)
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command waits ...
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command waits ...
 
 # SQL 핫스팟 (JSON)
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command sql ...
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command sql ...
 
 # 연속 모니터링 + JSONL 녹화
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command monitor \
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command monitor \
   --interval-seconds 5 --record-file run.jsonl --capture-file screen.txt ...
 
 # TUI 대시보드
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command tui --interval 6 ...
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command tui --interval 6 ...
 
 # 세션 강제 종료
-java -jar dit-dbms-bridge.jar --dbms-type oracle --command kill --sid <sid,serial#> ...
+java -jar dit-dbms-monitor.jar --dbms-type oracle --command kill --sid <sid,serial#> ...
 
 # 녹화 파일 리포트 (Markdown)
-java -jar dit-dbms-bridge.jar --command report --record-file run.jsonl --output report.md
+java -jar dit-dbms-monitor.jar --command report --record-file run.jsonl --output report.md
 ```
 
 ## 아키텍처
@@ -200,7 +200,7 @@ java/oracle-bridge/src/main/java/io/dit/bridge/
 mvn clean package -f java/oracle-bridge/pom.xml
 ```
 
-출력: `java/oracle-bridge/target/dit-dbms-bridge.jar` (fat JAR, Oracle JDBC + Tibero JDBC + Lanterna 포함)
+출력: `java/oracle-bridge/target/dit-dbms-monitor.jar` (fat JAR, Oracle JDBC + Tibero JDBC + Lanterna 포함)
 
 ## 기술 스택
 

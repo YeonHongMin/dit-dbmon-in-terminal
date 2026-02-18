@@ -1,2 +1,0 @@
-cd /etc/exporter/mysql_etc/
-nohup /usr/local/bin/sql_exporter -config.file=mysql_config_5.yml --web.listen-address 0.0.0.0:9505 1> /dev/null 2> /dev/null &
