@@ -1,0 +1,848 @@
+##################################################################################################################################
+### Custom OracleDB Metrics For SDS Cloud  #######################################################################################
+### YeonHong.Min 2024.10.29 CI-TEC         #######################################################################################
+##################################################################################################################################
+
+[[metric]]
+context= "ora_cpustat"
+labels = [ "stat_name" ]
+metricsdesc = { value="Generic gauage metric from v$osstat view in Oracle." }
+metricstype = { value = "gauge" }
+request = '''
+SELECT /*+ RULE */
+   STAT_NAME,
+   ROUND(NVL(VALUE,0)/1000000/(SELECT VALUE FROM V$OSSTAT WHERE STAT_NAME='NUM_CPUS')) AS VALUE
+FROM V$OSSTAT
+WHERE STAT_NAME IN
+   (
+   'IDLE_TIME'
+   ,'BUSY_TIME'
+   ,'USER_TIME'
+   ,'SYS_TIME'
+   ,'IOWAIT_TIME'
+   ,'NICE_TIME'
+   )
+ORDER BY STAT_NAME
+'''
+
+[[metric]]
+context= "ora_memstat"
+labels = [ "stat_name" ]
+metricsdesc = { value="Generic gauage metric from v$osstat view in Oracle." }
+metricstype = { value = "gauge" }
+request = '''
+SELECT /*+ RULE */
+   STAT_NAME,
+   ROUND(NVL(VALUE,0)/1024/1024) AS VALUE
+FROM V$OSSTAT
+WHERE STAT_NAME IN
+   (
+   'PHYSICAL_MEMORY_BYTES'
+   ,'FREE_MEMORY_BYTES'
+   ,'INACTIVE_MEMORY_BYTES'
+   ,'SWAP_FREE_BYTES'
+)
+ORDER BY STAT_NAME
+'''
+
+[[metric]]
+context= "ora_sysstat"
+labels = [ "name" ]
+metricsdesc = { value="Generic counter metric from v$sysstat view in Oracle." }
+metricstype = { value = "counter" }
+request = '''
+  SELECT /*+ RULE */ NAME, NVL(VALUE,0) AS VALUE
+  FROM   V$SYSSTAT
+  WHERE  NAME IN (
+           'user calls'
+           ,'session logical reads'
+           ,'db block gets'
+           ,'consistent gets'
+           ,'physical reads'
+           ,'physical writes'
+           ,'physical read bytes'
+           ,'physical write bytes'
+           ,'parse count (total)'
+           ,'parse count (hard)'
+           ,'sorts (disk)'
+           ,'user commits'
+           ,'user rollbacks'
+           ,'db block changes'
+           ,'workarea executions - onepass'
+           ,'workarea executions - optimal'
+           ,'redo size'
+           ,'execute count'
+           ,'cell physical IO interconnect bytes'
+           ,'cell physical IO bytes saved by storage index'
+           ,'cell physical IO bytes eligible for predicate offload'
+           ,'cell physical IO interconnect bytes returned by smart scan'
+           ,'cell num smart IO sessions using passthru mode due to cellsrv'
+           ,'cell num smart IO sessions using passthru mode due to user'
+           ,'cell num smart IO sessions using passthru mode due to timezone'
+           ,'cell flash cache read hits'
+           ,'physical read total IO requests'
+           ,'cell IO uncompressed bytes'
+           ,'physical read total bytes optimized'
+           ,'cell physical IO bytes saved during optimized file creation'
+           ,'chained rows processed by cell'
+           ,'chained rows skipped by cell'
+           ,'DBWR fusion writes'
+           ,'gcs messages sent'
+           ,'ges messages sent'
+           ,'global enqueue gets sync'
+           ,'global enqueue gets async'
+           ,'global enqueue get time'
+           ,'gc cr blocks received'
+           ,'gc cr block receive time'
+           ,'gc current blocks received'
+           ,'gc current block receive time'
+           ,'gc cr blocks served'
+           ,'gc cr block build time'
+           ,'gc cr block flush time'
+           ,'gc cr block send time'
+           ,'gc current blocks served'
+           ,'gc current block pin time'
+           ,'gc current block flush time'
+           ,'gc current block send time'
+           ,'gc blocks lost'
+           ,'gc blocks corrupt'
+           ,'consistent gets from cache'
+           ,'db block gets from cache'
+           ,'physical reads cache'
+          )
+  ORDER BY NAME
+'''
+ignorezeroresult = true
+
+
+[[metric]]
+context = "ora_system_event"
+labels = [ "name","wait_class"]
+metricsdesc = { time_waited_micro= "counter time metric of v$system_event.", total_waits="counter count metric of v$system_event" }
+metricstype = { time_waited_micro="counter", total_waits="counter" }
+request = '''
+ SELECT /*+ RULE */
+   EN.NAME
+  ,NVL(SE.WAIT_CLASS,'novalue') AS WAIT_CLASS
+  ,NVL(SE.TOTAL_WAITS,1) AS TOTAL_WAITS
+  ,NVL(SE.TIME_WAITED_MICRO,0) AS TIME_WAITED_MICRO
+FROM V$EVENT_NAME EN, V$SYSTEM_EVENT SE
+WHERE
+  EN.EVENT_ID = SE.EVENT_ID(+)
+  AND EN.WAIT_CLASS!='Idle'
+  AND (
+ --  SE.TIME_WAITED_MICRO > 0 OR
+     EN.NAME IN
+     (
+      'log file sync'                      -- selected
+     ,'db file sequential read'            -- selected
+     ,'db file scattered read'             -- selected
+     ,'db file async I/O submit'           -- selected
+     ,'db file parallel read'              -- selected
+     ,'db file parallel write'             -- selected
+     ,'Disk file operations I/O'           -- selected
+     ,'direct path read'                   -- selected
+     ,'direct path read temp'              -- selected
+     ,'direct path write'
+     ,'direct path write temp'
+     ,'enq: CF - contention'
+     ,'enq: HW - contention'               -- selected
+     ,'enq: KO - fast object checkpoint'
+     ,'enq: TX - index contention'         -- selected
+     ,'enq: TX - row lock contention'      -- selected
+     ,'enq: SQ - contention'               -- selected
+     ,'latch: row cache objects'
+     ,'latch: cache buffers chains'        -- selected
+     ,'latch: shared pool'                 -- selected
+     ,'latch: undo global data'
+     ,'ASM file metadata operation'
+     ,'PGA memory operation'
+     ,'SQL*Net message to client'          -- selected
+     ,'SQL*Net more data from client'
+     ,'SQL*Net more data to client'
+     ,'buffer busy waits'                  -- selected
+     ,'latch: undo global data'
+     ,'log file parallel write'            -- selected
+     ,'log file sequential read'           -- selected
+     ,'log file switch completion'
+     ,'read by other session'              -- selected
+     ,'row cache lock'                     -- selected
+     ,'library cache lock'                 -- selected
+     ,'library cache pin'
+     ,'buffer busy waits'                  -- selected
+     ,'free buffer waits'
+     ,'write complete waits'
+     ,'cell smart table scan'              -- selected
+     ,'cell single block physical read'    -- selected
+     ,'cell multiblock physical read'      -- selected
+     ,'cursor: mutex S'
+     ,'cursor: mutex X'
+     ,'cursor: pin S'                      -- selected
+     ,'cursor: pin S wait on X'
+     ,'cursor: pin X'
+     ,'ASM file metadata operation'
+     ,'gc buffer busy acquire'
+     ,'gc buffer busy release'
+     ,'gc cr block 2-way'
+     ,'gc cr block 3-way'
+     ,'gc cr block busy'
+     ,'gc cr block congested'
+     ,'gc cr block lost'
+     ,'gc cr disk read'
+     ,'gc cr disk request'
+     ,'gc cr failure'
+     ,'gc cr grant 2-way'
+     ,'gc cr grant 3-way'
+     ,'gc cr grant busy'
+     ,'gc cr grant congested'
+     ,'gc cr multi block grant'
+     ,'gc cr multi block mixed'
+     ,'gc cr multi block request'
+     ,'gc cr request'
+     ,'gc current block 2-way'
+     ,'gc current block 3-way'
+     ,'gc current block busy'
+     ,'gc current block congested'
+     ,'gc current block lost'
+     ,'gc current grant 2-way'
+     ,'gc current grant 3-way'
+     ,'gc current grant busy'
+     ,'gc current grant congested'
+     ,'gc current index split'
+     ,'gc current multi block request'
+     ,'gc current request'
+     ,'gc current retry'
+     ,'gc current split'
+     ,'gc domain validation'
+     ,'gc quiesce'
+     ,'gcs ddet enter server mode'
+     ,'gcs drm freeze begin'
+     ,'gcs drm freeze in enter server mode'
+     ,'gcs log flush sync'
+     ,'gcs remastering wait for read latch'
+     ,'gcs resource directory to be unfrozen'
+     ,'latch: gc element'
+     )
+    )
+ORDER BY SE.WAIT_CLASS, EN.NAME
+'''
+ignorezeroresult = true
+
+
+[[metric]]
+context = "ora_event_metric"
+labels = [ "event_name", "wait_count", "avgms" ]
+metricsdesc = { time_waited="gauge time metric of v$eventmetric."}
+metricstype = { time_waited="gauge"}
+request = '''
+SELECT
+    /*+ RULE */
+    N.NAME AS EVENT_NAME,
+    ROUND(M.TIME_WAITED) AS TIME_WAITED,
+    M.WAIT_COUNT AS WAIT_COUNT,
+    NVL(ROUND(10*M.TIME_WAITED/NULLIF(M.WAIT_COUNT,0),4),0) AS AVGMS
+FROM
+    V$EVENTMETRIC M,
+    V$EVENT_NAME  N
+WHERE
+    M.EVENT_ID=N.EVENT_ID
+AND N.WAIT_CLASS!='Idle'
+AND M.TIME_WAITED > 0
+ORDER BY
+    M.TIME_WAITED DESC
+'''
+ignorezeroresult = true
+
+
+[[metric]]
+context = 'ora_wait_sess'
+labels = [ "sid","spid","blocker","last_blker","cmd","wait_event","wait_info","dbuser","sqlid","sqltext","wait_sec", "elap_sec","logi_r","phy_r","bl_chg","cst_chg","pga_mb","osuser","machine","module","progam","service" ]
+metricsdesc = { value = "gauge cpu usage" }
+metricstype = { value = "gauge" }
+request = '''
+SELECT * FROM
+  (SELECT  /*+ NO_EXPAND LEADING(S P M I SQL) USE_NL(SQL) */
+      NVL(S.SID,0)||','||NVL(S.SERIAL#,0) AS sid
+      ,NVL(P.SPID,0) AS spid
+      ,'['|| NVL(S.BLOCKING_INSTANCE,0) || ']' || NVL(S.BLOCKING_SESSION,0) AS blocker
+      ,'['|| NVL(S.FINAL_BLOCKING_INSTANCE,0) || ']' || NVL(S.FINAL_BLOCKING_SESSION,0) AS last_blker
+      ,NVL(DECODE(S.COMMAND,
+              1, 'CreTab',               -- CREATE TABLE
+              2, 'INSERT',               -- INSERT
+              3, 'SELECT',               -- SELECT
+              4, 'CreClu',               -- CREATE CLUSTER
+              5, 'AltClu',               -- ALTER CLUSTER
+              6, 'UPDATE',               -- UPDATE
+              7, 'DELETE',               -- DELETE
+              8, 'DrpClu',               -- DROP CLUSTER
+              9, 'CreIdx',               -- CREATE INDEX
+             10, 'DrpIdx',               -- DROP INDEX
+             11, 'AltIdx',               -- ALTER INDEX
+             12, 'DrpTab',               -- DROP TABLE
+             13, 'CreSeq',               -- CREATE SEQUENCE
+             14, 'AltSeq',               -- ALTER SEQUENCE
+             15, 'AltTab',               -- ALTER TABLE
+             16, 'DrpSeq',               -- DROP SEQUENCE
+             17, 'GrtObj',               -- GRANT OBJECT
+             18, 'RvkObj',               -- REVOKE OBJECT
+             19, 'CreSyn',               -- CREATE SYNONYM
+             20, 'DrpSyn',               -- DROP SYNONYM
+             21, 'CreView',              -- CREATE VIEW
+             22, 'DrpView',              -- DROP VIEW
+             23, 'ValIdx',               -- VALIDATE INDEX
+             24, 'CreProc',              -- CREATE PROCEDURE
+             25, 'AltProc',              -- ALTER PROCEDURE
+             26, 'LOCK',                 -- LOCK
+             27, 'NO-OP',                -- NO-OP
+             28, 'RENAME',               -- RENAME
+             29, 'Commnt',               -- COMMENT
+             30, 'AdtObj',               -- AUDIT OBJECT
+             31, 'NoAdtObj',             -- NOAUDIT OBJECT
+             32, 'CreLink',              -- CREATE DATABASE LINK
+             33, 'DrpLink',              -- DROP DATABASE LINK
+             34, 'CreDB',                -- CREATE DATABASE
+             35, 'AltDB',                -- ALTER DATABASE
+             36, 'CreRS',                -- CREATE ROLLBACK SEG
+             37, 'AltRS',                -- ALTER ROLLBACK SEG
+             38, 'DrpRS',                -- DROP ROLLBACK SEG
+             39, 'CreTbs',               -- CREATE TABLESPACE
+             40, 'AltTbs',               -- ALTER TABLESPACE
+             41, 'DrpTbs',               -- DROP TABLESPACE
+             42, 'AltSess',              -- ALTER SESSION
+             43, 'AltUser',              -- ALTER USER
+             44, 'COMMIT',               -- COMMIT
+             45, 'RollBk',               -- ROLLBACK
+             46, 'SavPoin',              -- SAVEPOINT
+             47, 'PL/SQL',               -- PL/SQL EXECUTE
+             48, 'SetTran',              -- SET TRANSACTION
+             49, 'AltSys',               -- ALTER SYSTEM
+             50, 'EXPLAIN',              -- EXPLAIN
+             51, 'CreUser',              -- CREATE USER
+             52, 'CreRole',              -- CREATE ROLE
+             53, 'DrpUser',              -- DROP USER
+             54, 'DrpRole',              -- DROP ROLE
+             55, 'SetRole',              -- SET ROLE
+             56, 'CREATE SCHEMA',        -- CREATE SCHEMA
+             57, 'CreCtrl',              -- CREATE CONTROL FILE
+             59, 'CreTrig',              -- CREATE TRIGGER
+             60, 'AltTrig',              -- ALTER TRIGGER
+             61, 'DrpTrig',              -- DROP TRIGGER
+             62, 'AnalTab',              -- ANALYZE TABLE
+             63, 'AnalIdx',              -- ANALYZE INDEX
+             64, 'AnalClu',              -- ANALYZE CLUSTER
+             65, 'CreProf',              -- CREATE PROFILE
+             66, 'DrpProf',              -- DROP PROFILE
+             67, 'AltProf',              -- ALTER PROFILE
+             68, 'DrpProc',              -- DROP PROCEDURE
+             70, 'ALTER RESOURCE COST',  -- ALTER RESOURCE COST
+             71, 'CreMVLog',             -- CREATE MATERIALIZED VIEW LOG
+             72, 'AltMVLog',             -- ALTER MATERIALIZED VIEW LOG
+             73, 'DrpMVLog',             -- DROP MATERIALIZED VIEW LOG
+             74, 'CreMV',                -- CREATE MATERIALIZED VIEW
+             75, 'AltMV',                -- ALTER MATERIALIZED VIEW
+             76, 'DrpMV',                -- DROP MATERIALIZED VIEW
+             77, 'CreType',              -- CREATE TYPE
+             78, 'DrpType',              -- DROP TYPE
+             79, 'AltRole',              -- ALTER ROLE
+             80, 'AltType',              -- ALTER TYPE
+             81, 'CreTypeBd',            -- CREATE TYPE BODY
+             82, 'AltTypeBd',            -- ALTER TYPE BODY
+             83, 'DrpTypeBd',            -- DROP TYPE BODY
+             84, 'DrpLib',               -- DROP LIBRARY
+             85, 'TrcTab',               -- TRUNCATE TABLE
+             86, 'TrcClu',               -- TRUNCATE CLUSTER
+             91, 'CreFunc',              -- CREATE FUNCTION
+             92, 'AltFunc',              -- ALTER FUNCTION
+             93, 'DrpFunc',              -- DROP FUNCTION
+             94, 'CrePkg',               -- CREATE PACKAGE
+             95, 'AltPkg',               -- ALTER PACKAGE
+             96, 'DrpPkg',               -- DROP PACKAGE
+             97, 'CrePkgBd',             -- CREATE PACKAGE BODY
+             98, 'AltPkgBd',             -- ALTER PACKAGE BODY
+             99, 'DrpPkgBd',             -- DROP PACKAGE BODY
+            100, 'LOGON',                -- LOGON
+            101, 'LOGOFF',               -- LOGOFF
+            102, 'LOGOFF BY CLEANUP',    -- LOGOFF BY CLEANUP
+            103, 'SESSION REC',          -- SESSION REC
+            104, 'SysAdt',               -- SYSTEM AUDIT
+            105, 'SysNoAdt',             -- SYSTEM NOAUDIT
+            106, 'AdtDef',               -- AUDIT DEFAULT
+            107, 'NoAdtDef',             -- NOAUDIT DEFAULT
+            108, 'SysGrt',               -- SYSTEM GRANT
+            109, 'SysRvk',               -- SYSTEM REVOKE
+            110, 'CrePubSyn',            -- CREATE PUBLIC SYNONYM
+            111, 'DrpPubSyn',            -- DROP PUBLIC SYNONYM
+            112, 'CrePubLink',           -- CREATE PUBLIC DATABASE LINK
+            113, 'DrpPubLink',           -- DROP PUBLIC DATABASE LINK
+            114, 'GrnRole',              -- GRANT ROLE
+            115, 'RvkRole',              -- REVOKE ROLE
+            116, 'ExeProc',              -- EXECUTE PROCEDURE
+            117, 'UserComm',             -- USER COMMENT
+            118, 'EnTrig',               -- ENABLE TRIGGER
+            119, 'DisTrig',              -- DISABLE TRIGGER
+            120, 'EnAllTrig',            -- ENABLE ALL TRIGGERS
+            121, 'DisAllTrig',           -- DISABLE ALL TRIGGERS
+            122, 'NetErr',               -- NETWORK ERROR
+            123, 'ExeType',              -- EXECUTE TYPE
+            157, 'CreDir',               -- CREATE DIRECTORY
+            158, 'DrpDir',               -- DROP DIRECTORY
+            159, 'CreLib',               -- CREATE LIBRARY
+            160, 'CreJava',              -- CREATE JAVA
+            161, 'AltJava',              -- ALTER JAVA
+            162, 'DrpJava',              -- DROP JAVA
+            163, 'CreOper',              -- CREATE OPERATOR
+            164, 'CreIdxType',           -- CREATE INDEXTYPE
+            165, 'DrpIdxType',           -- DROP INDEXTYPE
+            167, 'DrpOper',              -- DROP OPERATOR
+            168, 'ASSOCIATE STATISTICS', -- ASSOCIATE STATISTICS
+            169, 'DISASSOCIATE STATISTICS', -- DISASSOCIATE STATISTICS
+            170, 'CALL METHOD',          -- CALL METHOD
+            171, 'CreSumm',              -- CREATE SUMMARY
+            172, 'AltSumm',              -- ALTER SUMMARY
+            173, 'DrpSumm',              -- DROP SUMMARY
+            174, 'CreDimen',             -- CREATE DIMENSION
+            175, 'AltDimen',             -- ALTER DIMENSION
+            176, 'DrpDimen',             -- DROP DIMENSION
+            177, 'CreContext',           -- CREATE CONTEXT
+            178, 'DrpContext',           -- DROP CONTEXT
+            179, 'AltOutLn',             -- ALTER OUTLINE
+            180, 'CreOutLn',             -- CREATE OUTLINE
+            181, 'DrpOutLn',             -- DROP OUTLINE
+            182, 'UpdIdx',               -- UPDATE INDEXES
+            183, 'AltOper',              -- ALTER OPERATOR
+            COMMAND),'novalue') AS cmd
+      ,NVL(EVENT,'novalue') AS wait_event
+      ,NVL(CASE
+        EVENT
+           WHEN (SELECT NAME FROM V$EVENT_NAME WHERE PARAMETER1='file#' AND EVENT#=S.EVENT# AND ROWNUM =1)
+             THEN (SELECT DECODE(O.TYPE#, 1,'[I]',2,'[T]',20,'[N]',19,'[P]','[0]') || NVL(NAME,'novalue') FROM SYS.OBJ$ O WHERE OBJ#=S.ROW_WAIT_OBJ#)
+           WHEN (SELECT NAME FROM V$EVENT_NAME WHERE NAME LIKE 'latch%' AND PARAMETER2='number' AND EVENT#=S.EVENT# AND ROWNUM=1)
+             THEN (SELECT NVL(NAME,'novalue') FROM V$LATCHNAME WHERE LATCH#=P2)
+           ELSE TO_CHAR(P1)||','||TO_CHAR(P2)
+           END,'novalue') AS wait_info
+      ,NVL(S.USERNAME,'novalue') AS dbuser
+      ,NVL(S.SQL_ID,0) AS sqlid
+      ,NVL(SUBSTR(SQL.SQL_TEXT,1,37),'novalue') AS sqltext
+      ,NVL(SECONDS_IN_WAIT,0) AS wait_sec
+      ,NVL(DECODE(S.TYPE, 'BACKGROUND',0, S.LAST_CALL_ET),0) AS elap_sec
+      ,NVL(I.BLOCK_GETS,0)+NVL(I.CONSISTENT_GETS,0) AS logi_r
+      ,NVL(I.PHYSICAL_READS,0) AS phy_r
+      ,NVL(I.BLOCK_CHANGES,0) AS bl_chg
+      ,NVL(I.CONSISTENT_CHANGES,0) AS cst_chg
+      ,NVL(ROUND(P.PGA_USED_MEM/1024/1024,1),0) AS pga_mb
+      ,NVL(S.OSUSER,'novalue') AS osuser
+      ,NVL(S.MACHINE,'novalue') AS machine
+      ,NVL(S.MODULE,'novalue') AS module
+      ,NVL(S.PROGRAM,'novalue') AS progam
+      ,NVL(S.SERVICE_NAME,'novalue') AS service
+      ,NVL(ROUND(M.CPU * 100 / M.INTSIZE_CSEC,1),0) AS value  -- CPU Usage Percentage
+FROM V$PROCESS P
+       ,V$SESSION S
+       ,V$SESS_IO I
+       ,V$SESSMETRIC M
+       ,V$SQL SQL
+WHERE S.SID=I.SID(+)
+  AND S.PADDR=P.ADDR
+  AND S.SQL_ADDRESS = SQL.ADDRESS(+)
+  AND S.SQL_HASH_VALUE = SQL.HASH_VALUE(+)
+  AND S.SQL_ID = SQL.SQL_ID(+)
+  AND SQL.CHILD_NUMBER(+) = 0
+  AND s.status in ('ACTIVE','KILLED')
+  AND S.WAIT_CLASS <>'Idle'
+  AND S.SID=M.SESSION_ID(+)
+  AND S.AUDSID <> USERENV('SESSIONID')
+  AND S.MODULE <> 'oracledb_exporter'
+ORDER BY M.CPU DESC
+)
+WHERE ROWNUM <= 40
+'''
+ignorezeroresult = true
+
+
+[[metric]]
+context = "ora_metric"
+labels = [ "metric_name" ]
+metricsdesc = { value= "Gauge average sysmetric." }
+metricstype = { value = "gauge" }
+request = '''
+  select *
+    from (select METRIC_NAME
+               , intsize_csec as METRIC_UNIT
+               , round(VALUE,3) as VALUE
+               , row_number() over (partition by METRIC_NAME order by intsize_csec asc) as rn
+            from V$SYSMETRIC) y
+   where rn = 1
+'''
+ignorezeroresult = true
+
+[[metric]]
+context = "ora_sessions"
+labels = [ "status", "type" ]
+metricsdesc = { value= "Gauge metric with count of sessions by status and type." }
+metricstype = { type="counter" , value = "gauge" }
+request = '''
+SELECT
+   STATUS
+  ,TYPE
+  ,COUNT(*) AS VALUE
+FROM V$SESSION
+GROUP BY STATUS, TYPE
+'''
+ignorezeroresult = true
+
+[[metric]]
+context = "ora_resource"
+labels = [ "resource_name" ]
+metricsdesc = { current_utilization= "Generic counter metric from v$resource_limit view in Oracle (current value).", limit_value="Generic counter metric from v$resource_limit view in Oracle." }
+metricstype = { current_utilization="gauge" , limit_value = "gauge" }
+request = '''
+SELECT RESOURCE_NAME,
+       CURRENT_UTILIZATION,
+       LIMIT_VALUE
+FROM V$RESOURCE_LIMIT
+ WHERE INITIAL_ALLOCATION NOT LIKE '%UNLIMITED%'
+       AND LIMIT_VALUE NOT LIKE '%UNLIMITED%'
+       AND MAX_UTILIZATION > 0
+'''
+ignorezeroresult = true
+
+#[[metric]]
+#context = "ora_asm_diskgroup"
+#labels = [ "name" ]
+#metricsdesc = { total = "Total size of ASM disk group.", free = "Free space available on ASM disk group." }
+#request = "SELECT name,total_mb*1024*1024 as total,free_mb*1024*1024 as free FROM v$asm_diskgroup_stat where exists (select 1 from v$datafile where name like '+%')"
+#ignorezeroresult = true
+
+[[metric]]
+context = "ora_process"
+metricsdesc = { count="Gauge metric with count of processes." }
+request = "SELECT COUNT(*) as count FROM v$process"
+
+[[metric]]
+context = "ora_wait_time"
+metricsdesc = { value="Generic counter metric from v$waitclassmetric view in Oracle." }
+fieldtoappend= "wait_class"
+request = '''
+SELECT /*+ RULE */
+  n.wait_class as WAIT_CLASS,
+  round(m.time_waited/m.INTSIZE_CSEC,3) as VALUE
+FROM
+  v$waitclassmetric  m, v$system_wait_class n
+WHERE
+  m.wait_class_id=n.wait_class_id AND n.wait_class != 'Idle'
+'''
+ignorezeroresult = true
+
+### [[metric]]
+### context = "ora_tablespace"
+### labels = [ "tablespace", "type" ]
+### metricsdesc = { bytes = "Generic counter metric of tablespaces bytes in Oracle.", max_bytes = "Generic counter metric of tablespaces max bytes in Oracle.", free = "Generic counter metric of tablespaces free bytes in Oracle.", used_percent = "Gauge metric showing as a percentage of how much of the tablespace has been used." }
+### request = '''
+### SELECT /*+ RULE */
+###     dt.tablespace_name as tablespace,
+###     dt.contents as type,
+###     dt.block_size * dtum.used_space as bytes,
+###     dt.block_size * dtum.tablespace_size as max_bytes,
+###     dt.block_size * (dtum.tablespace_size - dtum.used_space) as free,
+###     dtum.used_percent
+### FROM  dba_tablespace_usage_metrics dtum, dba_tablespaces dt
+### WHERE dtum.tablespace_name = dt.tablespace_name
+### ORDER by tablespace
+### '''
+### ignorezeroresult = true
+
+### [[metric]]
+### context = "ora_rac_traffic"
+### labels = [ "hostname" ]
+### metricsdesc = { rac_traffic_bytes = "Generic Counter of RAC Traffc." }
+### metricstype = { rac_traffic_bytes = "gauge" }
+### request = '''
+### SELECT /*+ RULE */ (SELECT HOST_NAME FROM V$INSTANCE) as hostname,
+###  NVL((GC * BLOCK_SIZE + (GCMR + GCMS) * 200),0) AS RAC_TRAFFIC_BYTES
+###  FROM
+###     (
+###         SELECT VALUE AS BLOCK_SIZE FROM V$PARAMETER
+###         WHERE NAME = 'db_block_size'
+###     ) Z,
+###     (
+###         SELECT SUM(VALUE) AS GC FROM V$SYSSTAT
+###         WHERE NAME IN ('gc current blocks received', 'gc cr blocks received',
+###                        'gc current blocks served', 'gc cr blocks served')
+###     ) A,
+###     (
+###         SELECT SUM(VALUE) AS GCMR FROM V$DLM_MISC
+###         WHERE NAME IN ('gcs msgs received', 'ges msgs received')
+###     ) B,
+###     (
+###         SELECT SUM(VALUE) AS GCMS FROM V$SYSSTAT
+###         WHERE NAME IN ('gcs messages sent', 'ges messages sent')
+###     ) C
+### '''
+### ignorezeroresult = true
+
+### [[metric]]
+### context = "ora_open_cursors"
+### labels = [ "name" ]
+### metricsdesc = { curr_max_cursor = "Generic Gauge of Maximum Open Cursors among all sessions.", cursor_limit ='Generic Gauge of Max Open Cursors' }
+### metricstype = { curr_max_cursor = "counter", cursor_limit="counter" }
+### request = '''
+### SELECT /*+ NO_MERGE(P) */ 'cursor' as name,
+###       CURR_MAX_CURSOR
+###       ,P.VALUE AS CURSOR_LIMIT
+###      FROM (SELECT MAX(SE.VALUE) CURR_MAX_CURSOR
+###            FROM V$SESSTAT SE, V$STATNAME SN
+###            WHERE SE.STATISTIC#=SN.STATISTIC#
+###            AND SN.NAME = 'opened cursors current'),
+###       V$PARAMETER P
+### WHERE P.NAME='open_cursors'
+### '''
+
+[[metric]]
+context = 'ora_top_cpu_sqls'
+labels = [ "sql_id","plan_hash_value","sql_text" ]
+metricsdesc = { cpu_time_total = "Counter cpu usage", elapsed_time_total="Counter Elapsed Time", disk_reads_total="Counter Disk Reads", direct_writes_total="Counter Direct Disk Writes", buffer_gets_total="Counter Buffer Gets.", executions_total="Counter executions."}
+metricstype = { cpu_time_total = "counter", executions_total="counter" }
+request = '''
+SELECT /*+ ORDERED */
+       NVL(Y.SQL_ID,'NOVALUE') AS SQL_ID
+      ,NVL(PLAN_HASH_VALUE+CHILD_NUMBER,0) AS PLAN_HASH_VALUE
+      ,NVL(SUBSTR(SQL_TEXT,1,120),'NOVALUE') AS SQL_TEXT
+      ,ROUND(NVL(CPU_TIME,0)/1000,3) AS CPU_TIME_TOTAL
+      ,ROUND(NVL(ELAPSED_TIME,0)/1000,3) AS ELAPSED_TIME_TOTAL
+      ,NVL(DISK_READS,0) AS DISK_READS_TOTAL
+      ,NVL(DIRECT_WRITES,0) AS DIRECT_WRITES_TOTAL
+      ,NVL(BUFFER_GETS,0) AS BUFFER_GETS_TOTAL
+      ,NVL(EXECUTIONS,1) AS EXECUTIONS_TOTAL
+  FROM (SELECT *
+          FROM (SELECT SQL_ID, COUNT(*)
+                  FROM V$ACTIVE_SESSION_HISTORY
+                 WHERE SAMPLE_TIME > SYSDATE - INTERVAL '10' MINUTE
+                   AND SQL_ID IS NOT NULL
+                 GROUP BY SQL_ID
+                 ORDER BY 2 DESC)
+         WHERE ROWNUM <= 300) X
+      , V$SQL Y
+ WHERE X.SQL_ID = Y.SQL_ID
+   AND Y.LAST_ACTIVE_TIME > SYSDATE - INTERVAL '30' MINUTE
+'''
+ignorezeroresult = true
+
+
+### Standard Metric
+
+[[metric]]
+context = "ora_startup"
+metricsdesc = {time_minutes="Database startup time in seconds."}
+request = "SELECT (SYSDATE - STARTUP_TIME) * 24 * 60 AS time_minutes FROM V$INSTANCE"
+
+### ASM Standard Metric
+#[[metric]]
+#context = "ora_diskgroup_size"
+#labels = [ "inst_id", "node_name" , "instance_name", "diskgroup_name" ]
+#metricsdesc = { total = "Total size of ASM disk group in MB.", free = "Free space available on ASM disk group in MB." }
+#request = '''
+#SELECT /*+ RULE */ instance_number            AS inst_id,
+#       host_name                  AS node_name,
+#       instance_name,
+#       name                       AS diskgroup_name,
+#       total_mb * 1024 * 1024     AS total,
+#       free_mb * 1024 * 1024      AS free
+#  FROM v$asm_diskgroup_stat, v$instance
+#'''
+#ignorezeroresult = true
+
+[[metric]]
+context = "ora_asmuptime"
+labels = [ "inst_id", "node_name", "instance_name"]
+metricsdesc = { uptime_minutes = "ASM uptime minutes" }
+request = '''
+SELECT instance_number                      AS inst_id,
+       host_name                            AS node_name,
+       instance_name,
+       (SYSDATE - startup_time) * 24 * 60   AS uptime_minutes
+  FROM v$instance
+'''
+ignorezeroresult = true
+
+#[[metric]]
+#context = "ora_asm_dg_stat"
+#labels = [ "inst_id", "diskgroup_name", "node_name", "instance_name", "state" ]
+#metricsdesc = { reads = "Total number of I/O read requests for the DG.", writes = "Total number of I/O write requests for the DG.", bytes_read = "Total number ### of bytes read from the DG", bytes_written = "Total number of bytes written from the DG", iops = "Total number of I/O requests for the DG" }
+#metricstype = { reads = "counter", writes = "counter", bytes_read = "counter", bytes_written = "counter", iops = "counter" }
+#request = '''
+#  SELECT /*+ RULE */
+#         i.instance_number              AS inst_id,
+#         i.host_name                    AS node_name,
+#         i.instance_name,
+#         g.state,
+#         g.name                         AS diskgroup_name,
+#         SUM (ds.reads)                 AS reads,
+#         SUM (ds.writes)                AS writes,
+#         SUM (ds.bytes_read)            AS bytes_read,
+#         SUM (ds.bytes_written)         AS bytes_written,
+#         SUM (ds.reads + ds.writes)     AS iops
+#    FROM v$asm_disk_stat ds, v$asm_diskgroup_stat g, v$instance i
+#   WHERE ds.mount_status = 'CACHED' AND ds.group_number = g.group_number
+#GROUP BY i.instance_number,
+#         i.host_name,
+#         i.instance_name,
+#         g.state,
+#         g.name
+#'''
+#ignorezeroresult = true
+
+### [[metric]]
+### context = "ora_tablespace_stat"
+### labels = [ "tablespace_name" ]
+### metricsdesc = { phyrds = "Number of physical reads done", phywrts = "Number of times DBWR is required to write", phyblkrd = "Number of physical blocks read", phyblkwrt = "Number of blocks written to disk, which may be the same as PHYWRTS if all writes are single blocks", readtim_ms = "Time (mili second) spent doing reads", writetim_ms = "Time (mili second) spent doing writes" }
+### metricstype = { phyrds = "counter", phywrts = "counter", readtim_ms = "counter", writetim_ms = "counter" }
+### request = '''
+### SELECT df.TABLESPACE_NAME
+###      , sum(fs.PHYRDS)       PHYRDS
+###      , sum(fs.PHYWRTS)      PHYWRTS
+###      , sum(fs.PHYBLKRD)     PHYBLKRD
+###      , sum(fs.PHYBLKWRT)    PHYBLKWRT
+###      , sum(fs.READTIM)*10   READTIM_MS
+###      , sum(fs.WRITETIM)*10  WRITETIM_MS
+###   FROM V$FILESTAT fs
+###   JOIN DBA_DATA_FILES df
+###     ON fs.FILE# = df.FILE_ID
+### GROUP BY df.TABLESPACE_NAME
+### '''
+### ignorezeroresult = true
+
+### [[metric]]
+### context = "ora_asm_disk_stat"
+### labels = [ "inst_id", "node_name", "instance_name", "diskgroup_name", "disk_number", "failgroup", "path" ]
+### metricsdesc = { reads = "Total number of I/O read requests for the DG.", writes = "Total number of I/O write requests for the DG.", read_time = "Total I/O time (in hundreths of a second) for read requests for the disk", write_time = "Total I/O time (in hundreths of a second) for write requests for the disk", bytes_read = "Total number of bytes read from the DG", bytes_written = "Total number of bytes written from the DG", iops = "Total number of I/O requests for the DG" }
+### metricstype = { reads = "counter", writes = "counter", bytes_read = "counter", read_time = "counter", write_time = "counter", bytes_written = "counter", iops = "counter" }
+### request = '''
+###   SELECT /*+ RULE */
+###          i.instance_number                         AS inst_id,
+###          i.host_name                               AS node_name,
+###          i.instance_name,
+###          g.name                                    AS diskgroup_name,
+###          ds.disk_number                            AS disk_number,
+###          ds.failgroup                              AS failgroup,
+###          ds.reads                                  AS reads,
+###          ds.writes                                 AS writes,
+###          ds.read_time * 1000                       AS read_time,
+###          ds.write_time * 1000                      AS write_time,
+###          ds.bytes_read                             AS bytes_read,
+###          ds.bytes_written                          AS bytes_written,
+###          REGEXP_REPLACE (ds.PATH, '.*/\', '\')     AS PATH,
+###          ds.reads + ds.writes                      AS iops
+###     FROM v$asm_disk_stat ds, v$asm_diskgroup_stat g, v$instance i
+###    WHERE ds.mount_status = 'CACHED' AND ds.group_number = g.group_number
+### '''
+### ignorezeroresult = true
+ 
+ 
+ 
+ 
+ 
+ 
+[[metric]]
+context = ""
+labels = [ "instance_name", "host_name", "version", "startup_time", "archiver" ]
+metricsdesc = { instance = "v$instance" }
+request = '''
+SELECT instance_number as instance
+     , instance_name
+     , host_name
+     , version
+     , startup_time
+     , archiver
+  FROM v$instance
+ WHERE to_char(SYSDATE, 'HH24:MI:SS') between '07:05:00' and '07:05:15'
+    OR to_char(SYSDATE, 'HH24:MI:SS') between '19:05:00' and '19:05:15'
+'''
+ignorezeroresult = true
+
+[[metric]]
+context = ""
+labels = [ "name", "log_mode", "database_role", "platform_name", "flashback_on" ]
+metricsdesc = { database = "v$database" }
+request = '''
+SELECT dbid as database
+     , name
+     , log_mode
+     , database_role
+     , platform_name
+     , flashback_on
+  FROM v$database
+ WHERE to_char(SYSDATE, 'HH24:MI:SS') between '07:05:00' and '07:05:15'
+    OR to_char(SYSDATE, 'HH24:MI:SS') between '19:05:00' and '19:05:15'
+'''
+ignorezeroresult = true
+
+[[metric]]
+context = ""
+labels = [ "name" ]
+metricsdesc = { param = "v$parameter name & value" }
+request = '''
+SELECT name
+     , value as param
+  FROM v$parameter
+ where name in (
+            'sga_target'
+          , 'sga_max_size'
+          , 'memory_target'
+          , 'memory_max_target'
+          , 'db_cache_size'
+          , 'shared_pool_size'
+          , 'java_pool_size'
+          , 'large_pool_size'
+          , 'pga_aggregate_limit'
+          , 'pga_aggregate_target'
+     )
+   AND (   to_char(SYSDATE, 'HH24:MI:SS') between '07:05:00' and '07:05:15'
+        or to_char(SYSDATE, 'HH24:MI:SS') between '19:05:00' and '19:05:15')
+'''
+ignorezeroresult = true
+
+[[metric]]
+context = "tablespace_usage"
+labels = [ "tablespace_name" ]
+metricsdesc = { tablespace_size = "", used_space = "", used_percent = "" }
+request = '''
+SELECT tablespace_name
+     , tablespace_size
+     , used_space
+     , used_percent
+  FROM dba_tablespace_usage_metrics
+ WHERE to_char(SYSDATE, 'HH24:MI:SS') between '07:05:00' and '07:05:15'
+    OR to_char(SYSDATE, 'HH24:MI:SS') between '19:05:00' and '19:05:15'
+
+'''
+ignorezeroresult = true
+
+[[metric]]
+context = "tablespace"
+labels = [ "tablespace_name", "contents" ]
+metricsdesc = { block_size = "dba_tablespaces" }
+request = '''
+SELECT tablespace_name
+     , contents
+     , block_size
+  FROM dba_tablespaces
+ WHERE to_char(SYSDATE, 'HH24:MI:SS') between '07:05:00' and '07:05:15'
+    OR to_char(SYSDATE, 'HH24:MI:SS') between '19:05:00' and '19:05:15'
+'''
+ignorezeroresult = true
+
+[[metric]]
+context = "parameter"
+labels = [ "name", "value"  ]
+metricsdesc = { all = "1" }
+request = '''
+SELECT name
+     , value as "value"
+     , 1     as "all"
+  FROM v$parameter
+ WHERE to_char(SYSDATE, 'HH24:MI:SS') between '07:06:00' and '07:06:15'
+    OR to_char(SYSDATE, 'HH24:MI:SS') between '19:06:00' and '19:06:15'
+'''
+ignorezeroresult = true
+ 
+ 

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+cd /etc/exporter/postgres
+
+### Config #######
+export DATA_SOURCE_NAME="postgresql://dbuser:password@192.168.0.3:2866/dbname?sslmode=disable"
+export LISTEN_ADDRESS="0.0.0.0:9201"
+
+BNAME=`basename $0`
+LOGFILE="/etc/exporter/log/$BNAME.log"
+
+/usr/local/bin/postgres_exporter \
+      --collector.database \
+      --collector.database_wraparound \
+      --collector.locks \
+      --collector.long_running_transactions \
+      --collector.postmaster \
+      --no-collector.process_idle \
+      --collector.replication \
+      --collector.replication_slot \
+      --collector.stat_activity_autovacuum \
+      --collector.stat_bgwriter \
+      --collector.stat_database \
+      --no-collector.stat_statements \
+      --no-collector.stat_user_tables \
+      --no-collector.stat_wal_receiver \
+      --no-collector.statio_user_indexes \
+      --auto-discover-databases \
+      --no-collector.statio_user_tables \
+      --collector.wal \
+      --no-collector.xlog_location \
+      --no-web.systemd-socket \
+      --web.listen-address=$LISTEN_ADDRESS \
+      --web.telemetry-path="/metrics" \
+      --include-databases="postgres" \
+      --extend.query-path=queries.yaml \
+      --log.level=info &

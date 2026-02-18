@@ -1,5 +1,7 @@
 # DOC-5: Design System (기초 디자인 시스템) — SDD 수준
 
+> **Status**: Archived. ANSI 색상 팔레트와 UI 원칙은 현재 Lanterna TUI 구현에 부분 반영되었다. 구체적 색상값은 docs/09_TDD.md 참조.
+
 ## 5.1 TUI 디자인 원칙
 
 DIT (DBmon-In-Terminal)는 s-tui(Stress Terminal UI) 스타일의 터미널 모니터링 도구이다. ANSI 256색 팔레트와 유니코드 블록 문자 기반의 시계열 차트 스택을 핵심 UI로 사용한다.

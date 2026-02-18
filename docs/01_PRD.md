@@ -1,5 +1,7 @@
 # DOC-1: PRD (제품 요구사항 정의서)
 
+> **Status**: Archived. 이 문서는 Python/Textual 기반 초기 기획 시절의 PRD이며, 현재 DIT는 Java/Lanterna 기반으로 재작성되었다. 비전과 페르소나는 유효하나 기술 스택(Python, pip, Textual) 참조는 해당하지 않는다.
+
 ## 1.1 문제 정의
 
 현대 기업 환경에서 DBA는 Oracle, MySQL, PostgreSQL, SQL Server 등 이기종 데이터베이스를 운영한다. 현재 모니터링은 Grafana 같은 웹 기반 도구에 의존하고 있어 다음과 같은 문제가 발생한다.

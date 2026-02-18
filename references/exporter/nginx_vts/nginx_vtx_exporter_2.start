@@ -1,0 +1,3 @@
+#!/bin/bash
+
+nohup /usr/local/bin/nginx-vtx-exporter -telemetry.address=:9914 -nginx.scrape_uri=http://192.168.0.10:91/status/format/json > output_2.log 2>&1 &

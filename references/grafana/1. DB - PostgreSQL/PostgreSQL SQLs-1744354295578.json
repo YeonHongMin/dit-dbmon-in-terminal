@@ -1,0 +1,2356 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.3.1"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "PostgreSQL SQL (2024-08-26)",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "gnetId": 14031,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "PostgreSQL",
+        "Main"
+      ],
+      "targetBlank": false,
+      "title": "Main",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "PostgreSQL",
+        "Monitor"
+      ],
+      "targetBlank": false,
+      "title": "Monitor",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "PostgreSQL",
+        "SQL"
+      ],
+      "targetBlank": false,
+      "title": "SQL",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "PostgreSQL",
+        "Others"
+      ],
+      "targetBlank": false,
+      "title": "Others",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Total time spent in the statement.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 0,
+        "y": 0
+      },
+      "id": 174,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(pg_stat_topsql_seconds_total{alias=~\"$alias\"}[$intv])) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_seconds_total{alias=~\"$alias\"}[5m])) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\nsum(rate(pg_stat_topsql_seconds_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_seconds_total{alias=~\"$alias\"}[5m] offset $diff_intv)) by (alias)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Total - SQL Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Number of times executed, in seconds",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "cps",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 5,
+        "y": 0
+      },
+      "id": 175,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(pg_stat_topsql_calls_total{alias=~\"$alias\"}[$intv])) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_calls_total{alias=~\"$alias\"}[5m])) by (alias)\r\n\r\n",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\nsum(rate(pg_stat_topsql_calls_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_calls_total{alias=~\"$alias\"}[5m] offset $diff_intv)) by (alias)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Total - Executions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Total number of rows retrieved or affected by the statement",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "cps",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 10,
+        "y": 0
+      },
+      "id": 176,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(pg_stat_topsql_rows_total{alias=~\"$alias\"}[$intv])) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_rows_total{alias=~\"$alias\"}[5m])) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\nsum(rate(pg_stat_topsql_rows_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_rows_total{alias=~\"$alias\"}[5m] offset $diff_intv)) by (alias)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Rows  retrieved or affected",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Total time spent reading blocks.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 15,
+        "y": 0
+      },
+      "id": 177,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\"}[$intv])) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\"}[5m])) by (alias)\r\n\r\n",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\nsum(rate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\"}[5m] offset $diff_intv)) by (alias)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Total - SQL block_read Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Total time spent writing blocks.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "id": 178,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\"}[$intv])) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\"}[5m])) by (alias)\r\n\r\n",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "(\r\nsum(rate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\nor\r\nsum(irate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\"}[5m] offset $diff_intv)) by (alias)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Total - SQL block_write Time",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 186,
+      "panels": [],
+      "title": "Top SQLs Comparison",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Top SQL ordered by Elapsed Time",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false,
+            "width": 130
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sql_text"
+            },
+            "properties": [
+              {
+                "id": "custom.width"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SQL time(s)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Executions"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Rows_exam."
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/.*Diff.*/"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "unit"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "link",
+                    "url": "d/eefd7d2d-cfda-4c0d-b5ca-eec627799e11/postgresql-sql-details?&from=${__from}&to=${__to}&var-group=${group:raw}&var-alias=${alias:raw}&var-intv=${intv:raw}&var-query_id=${__data.fields.queryid}&var-use_diff=${use_diff:raw}&var-diff_intv=${diff_intv:raw}&var-dbname=${__data.fields.datname}&var-sql_text=${__data.fields.sql_text}&var-user=${__data.fields.user}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 188,
+      "interval": "20s",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": [],
+          "reducer": [
+            "sum"
+          ],
+          "show": true
+        },
+        "frameIndex": 3,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "SQL time(s)"
+          }
+        ]
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200, \r\n     sum ((pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} -\r\n           pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} offset $__range)\r\n          or pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"})\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n    ) ",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "time"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200, \r\n     sum ((pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} -\r\n           pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} offset $__range)\r\n          or pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"})\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n    ) ",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "exec"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200, \r\n     sum ((pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} -\r\n           pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} offset $__range)\r\n          or pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"})\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n    ) ",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "rows"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200,(\r\n   sum(max_over_time(pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv) -\r\n       min_over_time(pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv))\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n)) >= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "time_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200,(\r\n   sum(max_over_time(pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv) -\r\n       min_over_time(pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv))\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n)) >= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "exec_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200,(\r\n   sum(max_over_time(pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv) -\r\n       min_over_time(pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv))\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n)) >= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "rows_diff"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "alias": true,
+              "instance": true,
+              "job": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Time": 4,
+              "Value #exec": 10,
+              "Value #exec_diff": 11,
+              "Value #rows": 12,
+              "Value #rows_diff": 13,
+              "Value #time": 8,
+              "Value #time_diff": 9,
+              "alias": 5,
+              "datname": 0,
+              "instance": 6,
+              "job": 7,
+              "queryid": 2,
+              "sql_text": 3,
+              "user": 1
+            },
+            "renameByName": {
+              "Value #exec": "Executions",
+              "Value #exec_diff": "Exec. Diff",
+              "Value #rows": "Rows_exam.",
+              "Value #rows_diff": "Rows Diff",
+              "Value #time": "SQL time(s)",
+              "Value #time_diff": "time(s) Diff"
+            }
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 158,
+      "panels": [],
+      "title": "Top SQLs per executions",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Top SQL ordered by Elapsed Time",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false,
+            "width": 130
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sql_text"
+            },
+            "properties": [
+              {
+                "id": "custom.width"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SQL time(s)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tm(s)/exe"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tm(s)/exe Diff"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rows/exe"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/.*Diff.*/"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "unit"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "link",
+                    "url": "d/eefd7d2d-cfda-4c0d-b5ca-eec627799e11/postgresql-sql-details?&from=${__from}&to=${__to}&var-group=${group:raw}&var-alias=${alias:raw}&var-intv=${intv:raw}&var-query_id=${__data.fields.queryid}&var-use_diff=${use_diff:raw}&var-diff_intv=${diff_intv:raw}&var-dbname=${__data.fields.datname}&var-sql_text=${__data.fields.sql_text}&var-user=${__data.fields.user}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 189,
+      "interval": "20s",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": [
+            "Value #time",
+            "Value #time_diff"
+          ],
+          "reducer": [
+            "sum"
+          ],
+          "show": true
+        },
+        "frameIndex": 3,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "SQL time(s)"
+          }
+        ]
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200, \r\n     sum ((pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} -\r\n           pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} offset $__range)\r\n          or pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"})\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n    ) ",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "time"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200, \r\n     sum ((pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} -\r\n           pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} offset $__range)\r\n          or pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"})\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n    ) ",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "exec"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200, \r\n     sum ((pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} -\r\n           pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"} offset $__range)\r\n          or pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"})\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n    ) ",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "rows"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200,(\r\n   sum(max_over_time(pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv) -\r\n       min_over_time(pg_stat_topsql_seconds_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv))\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n)) >= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "time_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200,(\r\n   sum(max_over_time(pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv) -\r\n       min_over_time(pg_stat_topsql_calls_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv))\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n)) >= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "exec_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(200,(\r\n   sum(max_over_time(pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv) -\r\n       min_over_time(pg_stat_topsql_rows_total{sql_text=~\"(?s)(?i).*$filter.*\", alias=~\"$alias\"}[$__range] offset $diff_intv))\r\n    by (job, alias, instance, queryid, sql_text, datname, user) \r\n)) >= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "rows_diff"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "tm(s)/exe",
+            "binary": {
+              "left": "Value #time",
+              "operator": "/",
+              "right": "Value #exec"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "tm(s)/exe Diff",
+            "binary": {
+              "left": "Value #time_diff",
+              "operator": "/",
+              "right": "Value #exec_diff"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "rows/exe",
+            "binary": {
+              "left": "Value #rows",
+              "operator": "/",
+              "right": "Value #exec"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "rows/exe Diff",
+            "binary": {
+              "left": "Value #rows_diff",
+              "operator": "/",
+              "right": "Value #exec_diff"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #exec": true,
+              "Value #exec_diff": true,
+              "Value #rows": true,
+              "Value #rows_diff": true,
+              "alias": true,
+              "instance": true,
+              "job": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Time": 0,
+              "Value #exec": 10,
+              "Value #exec_diff": 11,
+              "Value #rows": 12,
+              "Value #rows_diff": 13,
+              "Value #time": 8,
+              "Value #time_diff": 9,
+              "alias": 1,
+              "datname": 4,
+              "instance": 2,
+              "job": 3,
+              "queryid": 6,
+              "rows/exe": 16,
+              "rows/exe Diff": 17,
+              "sql_text": 7,
+              "tm(s)/exe": 14,
+              "tm(s)/exe Diff": 15,
+              "user": 5
+            },
+            "renameByName": {
+              "Value #exec": "Executions",
+              "Value #exec_diff": "Exec. Diff",
+              "Value #rows": "Rows_exam.",
+              "Value #rows_diff": "Rows Diff",
+              "Value #time": "SQL time(s)",
+              "Value #time_diff": "time(s) Diff",
+              "tm(s)/exe": ""
+            }
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 157,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": true,
+                "inspect": false,
+                "width": 200
+              },
+              "decimals": 2,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "none",
+              "unitScale": true
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "sql_text"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "executions"
+                },
+                "properties": [
+                  {
+                    "id": "decimals",
+                    "value": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 3,
+            "w": 24,
+            "x": 0,
+            "y": 20
+          },
+          "id": 181,
+          "interval": "20s",
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "enablePagination": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "frameIndex": 0,
+            "showHeader": false,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "time(s)"
+              }
+            ]
+          },
+          "pluginVersion": "10.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "pg_stat_topsql_seconds_total{alias=\"$alias\", queryid=~\"$query_id.*\"}\r\n",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "A"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "Value": true,
+                  "__name__": true,
+                  "alias": true,
+                  "datname": true,
+                  "group": true,
+                  "instance": true,
+                  "job": true,
+                  "schema": true,
+                  "server": true,
+                  "user": true
+                },
+                "includeByName": {},
+                "indexByName": {
+                  "Time": 0,
+                  "Value": 9,
+                  "__name__": 1,
+                  "alias": 2,
+                  "digest": 3,
+                  "digest_text": 5,
+                  "group": 6,
+                  "instance": 7,
+                  "job": 8,
+                  "schema": 4
+                },
+                "renameByName": {}
+              }
+            }
+          ],
+          "transparent": true,
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Total time spent in the statement.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s",
+              "unitScale": true
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 5,
+            "x": 0,
+            "y": 23
+          },
+          "id": 180,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(pg_stat_topsql_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv])) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m])) by (queryid)",
+              "hide": false,
+              "legendFormat": "{{queryid}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "(\r\nsum(rate(pg_stat_topsql_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv] offset $diff_intv)) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m] offset $diff_intv)) by (queryid)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "hide": false,
+              "legendFormat": "{{queryid}}:diff",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "SQL Time",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Number of times executed, in seconds",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "cps",
+              "unitScale": true
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 5,
+            "x": 5,
+            "y": 23
+          },
+          "id": 182,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(pg_stat_topsql_calls_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv])) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_calls_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m])) by (queryid)",
+              "hide": false,
+              "legendFormat": "{{queryid}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "(\r\nsum(rate(pg_stat_topsql_calls_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv] offset $diff_intv)) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_calls_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m] offset $diff_intv)) by (queryid)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "hide": false,
+              "legendFormat": "{{queryid}}:diff",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Executions",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Total number of rows retrieved or affected by the statement",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "cps",
+              "unitScale": true
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 5,
+            "x": 10,
+            "y": 23
+          },
+          "id": 183,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(pg_stat_topsql_rows_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv])) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_rows_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m])) by (queryid)",
+              "hide": false,
+              "legendFormat": "{{queryid}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "(\r\nsum(rate(pg_stat_topsql_rows_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv] offset $diff_intv)) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_rows_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m] offset $diff_intv)) by (queryid)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "hide": false,
+              "legendFormat": "{{queryid}}:diff",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Rows  retrieved or affected",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Total time spent reading blocks.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s",
+              "unitScale": true
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 5,
+            "x": 15,
+            "y": 23
+          },
+          "id": 184,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv])) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m])) by (queryid)",
+              "hide": false,
+              "legendFormat": "{{queryid}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "(\r\nsum(rate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv] offset $diff_intv)) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_block_read_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m] offset $diff_intv)) by (queryid)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "hide": false,
+              "legendFormat": "{{queryid}}:diff",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "SQL block_read Time",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Total time spent writing blocks.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s",
+              "unitScale": true
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 5,
+            "w": 4,
+            "x": 20,
+            "y": 23
+          },
+          "id": 185,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv])) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m])) by (queryid)",
+              "hide": false,
+              "legendFormat": "{{queryid}}",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "expr": "(\r\nsum(rate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[$intv] offset $diff_intv)) by (queryid)\r\nor\r\nsum(irate(pg_stat_topsql_block_write_seconds_total{alias=~\"$alias\", queryid=~\"$query_id.*\"}[5m] offset $diff_intv)) by (queryid)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "hide": false,
+              "legendFormat": "{{queryid}}:diff",
+              "range": true,
+              "refId": "C"
+            }
+          ],
+          "title": "SQL block_write Time",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Selected SQLs",
+      "type": "row"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "CI-TEC",
+    "PostgreSQL",
+    "SQL"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(pg_up,job)",
+        "description": "group",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Group",
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(pg_up,job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(pg_up{job=~\"$group\"},alias)",
+        "description": "DB to Monitor",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Instance",
+        "multi": false,
+        "name": "alias",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(pg_up{job=~\"$group\"},alias)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": {
+          "selected": false,
+          "text": "1m",
+          "value": "1m"
+        },
+        "description": "",
+        "hide": 0,
+        "label": "Interval",
+        "name": "intv",
+        "options": [
+          {
+            "selected": false,
+            "text": "10s",
+            "value": "10s"
+          },
+          {
+            "selected": false,
+            "text": "30s",
+            "value": "30s"
+          },
+          {
+            "selected": true,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "selected": false,
+            "text": "12h",
+            "value": "12h"
+          }
+        ],
+        "query": "10s, 30s, 1m, 5m, 30m, 1h, 6h, 12h",
+        "queryValue": "",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "type": "interval"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "description": "Input SQL text (Min 5 chars.)",
+        "hide": 0,
+        "label": "Top SQLs Filter",
+        "name": "filter",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "Enter query_id",
+          "value": "Enter query_id"
+        },
+        "description": "Input the query_id. minimum first 5 characters.",
+        "hide": 0,
+        "label": "SQL Detail query_id (Min 5 chars.)",
+        "name": "query_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "Enter query_id",
+            "value": "Enter query_id"
+          }
+        ],
+        "query": "input query_id",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "Off",
+          "value": "0"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Comparison",
+        "multi": false,
+        "name": "use_diff",
+        "options": [
+          {
+            "selected": false,
+            "text": "On",
+            "value": "1"
+          },
+          {
+            "selected": true,
+            "text": "Off",
+            "value": "0"
+          }
+        ],
+        "query": "On : 1, Off : 0",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "1d",
+          "value": "1d"
+        },
+        "description": "previous days, You can input directly.\nex) 4d, 6w",
+        "hide": 0,
+        "label": "Comp. Period",
+        "name": "diff_intv",
+        "options": [
+          {
+            "selected": true,
+            "text": "1d",
+            "value": "1d"
+          }
+        ],
+        "query": "1d",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "PostgreSQL SQLs",
+  "uid": "a93f132a-e1d6-4b94-9b3d-018f367f019c",
+  "version": 46,
+  "weekStart": ""
+}

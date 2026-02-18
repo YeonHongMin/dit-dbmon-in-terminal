@@ -1,5 +1,7 @@
 # DOC-2: TRD (기술 요구사항 정의서) — SDD 수준 상세 설계
 
+> **Status**: Archived. 이 문서는 Python/Textual/asyncio 기반 설계이며, 현재 DIT는 Java 8+ / Lanterna / JDBC 기반으로 재작성되었다. DBMS별 메트릭 카탈로그(2.2.2)는 향후 DBMS 확장 시 참고 가치가 있다.
+
 ## 2.1 시스템 아키텍처
 
 ```

@@ -1,0 +1,13 @@
+global:
+  scrape_timeout_offset: 1000ms
+  min_interval: 0s
+  max_connections: 3
+  max_idle_connections: 3
+
+target:
+  data_source_name: 'mysql://exporter:eXporteR!82@tcp(192.168.0.4:10001)/mysql'
+  collectors: [mysql_custom]
+collector_files: 
+  - "mysql_custom.collector.yml"
+
+#  data_source_name: 'mysql://exporter:eXporteR%2182@192.168.0.4:10001/mysql'

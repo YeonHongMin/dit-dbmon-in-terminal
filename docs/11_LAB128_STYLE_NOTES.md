@@ -1,5 +1,7 @@
 # DOC-11: LAB128 Style Notes
 
+> **Status**: Archived. LAB128 운영 감각의 TUI 반영 노트. 일부 기능(sparkline, snapshot save)은 구현됨. record/replay, incident highlight 등은 미구현.
+
 ## 목표
 기존 LAB128 모니터링이 제공하던 운영 감각을 DIT TUI에 반영한다.
 

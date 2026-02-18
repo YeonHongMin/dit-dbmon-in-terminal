@@ -1,0 +1,2336 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.3.1"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Oracle SQLs (2024-08-26)",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "Oracle",
+        "Main"
+      ],
+      "targetBlank": false,
+      "title": "Main",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "Oracle",
+        "One"
+      ],
+      "targetBlank": false,
+      "title": "One",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "Oracle",
+        "SQL"
+      ],
+      "targetBlank": false,
+      "title": "SQL",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "Oracle",
+        "Others"
+      ],
+      "targetBlank": false,
+      "title": "Others",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_elapsed_time_total{alias=~\"$alias\"}[$intv])/1000) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_elapsed_time_total{alias=~\"$alias\"}[$intv] offset $diff_intv)/1000) by (alias)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Total - SQL Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "id": 46,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_cpu_time_total{alias=~\"$alias\"}[$intv])/1000) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_cpu_time_total{alias=~\"$alias\"}[$intv] offset $diff_intv)/1000) by (alias)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Total - CPU Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "id": 52,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_executions_total{alias=~\"$alias\"}[$intv])) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_executions_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Total - Executions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "id": 47,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_buffer_gets_total{alias=~\"$alias\"}[$intv])) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_buffer_gets_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Total - Buffer Gets",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "id": 50,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_disk_reads_total{alias=~\"$alias\"}[$intv])) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_disk_reads_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Total - Direct Reads",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "id": 51,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_direct_writes_total{alias=~\"$alias\"}[$intv])) by (alias)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate(oracledb_ora_top_cpu_sqls_direct_writes_total{alias=~\"$alias\"}[$intv] offset $diff_intv)) by (alias)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "hide": false,
+          "legendFormat": "{{alias}}:diff",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Total - Direct Writes",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 60,
+      "panels": [],
+      "title": "Top SQLs Comparison",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Top SQLs ordered by Elapsed Time",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false,
+            "minWidth": 100,
+            "width": 120
+          },
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SQL time(s)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CPU time(s)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Executions"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Buffer_gets"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/.*Diff.*/"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sql_text"
+            },
+            "properties": [
+              {
+                "id": "custom.width"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sql_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "link",
+                    "url": "d/e5bb513d-6b0f-45d1-8dd2-dc426a4dfda9/oracle-sqls?from=${__from}&to=${__to}&var-group=${group:raw}&var-alias=$alias&var-intv=$intv&var-use_diff=$use_diff&var-diff_intv=$diff_intv&var-sql_id=${__data.fields.sql_id}&var-sql_text=${__data.fields.sql_text}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 245
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Disk_reads"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 64,
+      "interval": "20s",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": true
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "SQL time(s)"
+          }
+        ]
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_elapsed_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])/1000\r\n)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "elapsed_tm"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_cpu_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])/1000\r\n)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "cpu_tm"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_executions_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])\r\n)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "exec"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_buffer_gets_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])\r\n)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "buffer_gets"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_disk_reads_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])\r\n)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "disk_reads"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_elapsed_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)/1000\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "etm_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_cpu_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)/1000\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "cpu_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_executions_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "exec_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_buffer_gets_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "bget_diff"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "topk(1000,   \r\n   increase(oracledb_ora_top_cpu_sqls_disk_reads_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "disk_reads_diff"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Value #bget_diff": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #buffer_gets": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #cpu_diff": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #cpu_tm": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #disk_reads": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #disk_reads_diff": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #elapsed_tm": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #etm_diff": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #exec": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #exec_diff": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "sql_id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "sql_text": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "alias": true,
+              "instance": true,
+              "job": true,
+              "plan_hash_value": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Value #bget_diff (sum)": 9,
+              "Value #buffer_gets (sum)": 8,
+              "Value #cpu_diff (sum)": 5,
+              "Value #cpu_tm (sum)": 4,
+              "Value #elapsed_tm (sum)": 2,
+              "Value #etm_diff (sum)": 3,
+              "Value #exec (sum)": 6,
+              "Value #exec_diff (sum)": 7,
+              "sql_id": 0,
+              "sql_text": 1
+            },
+            "renameByName": {
+              "Time": "",
+              "Value #bget_diff": "BGet. Diff",
+              "Value #bget_diff (sum)": "BGet. Diff",
+              "Value #buffer_gets": "Buffer_gets",
+              "Value #buffer_gets (sum)": "Buffer_gets",
+              "Value #cpu_diff": "C_tm(s) Diff",
+              "Value #cpu_diff (sum)": "C_tm(s) Diff",
+              "Value #cpu_tm": "CPU time(s)",
+              "Value #cpu_tm (sum)": "CPU time(s)",
+              "Value #disk_reads (sum)": "Disk_reads",
+              "Value #disk_reads_diff (sum)": "DReads. Diff",
+              "Value #elapsed_tm": "SQL time(s)",
+              "Value #elapsed_tm (sum)": "SQL time(s)",
+              "Value #etm_diff": "S_tm(s) Diff",
+              "Value #etm_diff (sum)": "S_tm(s) Diff",
+              "Value #exec": "Executions",
+              "Value #exec (sum)": "Executions",
+              "Value #exec_diff": "Exec. Diff",
+              "Value #exec_diff (sum)": "Exec. Diff",
+              "alias": "",
+              "job": ""
+            }
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 15,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "description": "Top SQLs ordered by Elapsed Time",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "filterable": false,
+                "inspect": false,
+                "minWidth": 100,
+                "width": 120
+              },
+              "decimals": 1,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "short",
+              "unitScale": true
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "sql_text"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "SQL time(s)"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "S_tm(s) Diff"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "S_tm(s)/exe"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 3
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "S_tm(s)/exe Diff"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "shades"
+                    }
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 3
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "C_tm(s)/exe"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 3
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "C_tm(s)/exe Diff"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "decimals",
+                    "value": 3
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "B_Gets/exe"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "B_Gets/exe Diff"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "plan_hash_value"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 119
+                  },
+                  {
+                    "id": "unit",
+                    "value": "none"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "sql_id"
+                },
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "link",
+                        "url": "d/e5bb513d-6b0f-45d1-8dd2-dc426a4dfda9/oracle-sqls?from=${__from}&to=${__to}&var-group=${group:raw}&var-alias=$alias&var-intv=$intv&var-use_diff=$use_diff&var-diff_intv=$diff_intv&var-sql_id=${__data.fields.sql_id}&var-sql_text=${__data.fields.sql_text}"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "D_Reads/exe"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "green",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "D_Reads/exe  Diff"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 19
+          },
+          "id": 62,
+          "interval": "20s",
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "enablePagination": false,
+              "fields": [
+                "Value #elapsed_tm (sum)",
+                "Value #etm_diff (sum)"
+              ],
+              "reducer": [
+                "sum"
+              ],
+              "show": true
+            },
+            "frameIndex": 0,
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "SQL time(s)"
+              }
+            ]
+          },
+          "pluginVersion": "10.3.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_elapsed_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])/1000\r\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "elapsed_tm"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_cpu_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])/1000\r\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "cpu_tm"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_executions_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])\r\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "exec"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_buffer_gets_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])\r\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "buffer_gets"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_disk_reads_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range])\r\n)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "disk_reads"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_elapsed_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)/1000\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "etm_diff"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_cpu_time_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)/1000\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "cpu_diff"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_executions_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "exec_diff"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,\r\n   increase(oracledb_ora_top_cpu_sqls_buffer_gets_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "bget_diff"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "topk(1000,   \r\n   increase(oracledb_ora_top_cpu_sqls_disk_reads_total{alias=~\"$alias\", sql_text=~\"(?s)(?i).*$filter.*\", sql_id=~\"$sql_id.*\"}[$__range] offset $diff_intv)\r\n)\r\n>= ((1-$use_diff)*100000000000000000000000000000000000000000)",
+              "format": "table",
+              "hide": false,
+              "instant": true,
+              "legendFormat": "__auto",
+              "range": false,
+              "refId": "disk_reads_diff"
+            }
+          ],
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {}
+            },
+            {
+              "id": "groupBy",
+              "options": {
+                "fields": {
+                  "Value #bget_diff": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #buffer_gets": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #cpu_diff": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #cpu_tm": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #disk_reads": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #disk_reads_diff": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #elapsed_tm": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #etm_diff": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #exec": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "Value #exec_diff": {
+                    "aggregations": [
+                      "sum"
+                    ],
+                    "operation": "aggregate"
+                  },
+                  "sql_id": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "sql_text": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  }
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "S_tm(s)/exe",
+                "binary": {
+                  "left": "Value #elapsed_tm (sum)",
+                  "operator": "/",
+                  "right": "Value #exec (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "S_tm(s)/exe Diff",
+                "binary": {
+                  "left": "Value #etm_diff (sum)",
+                  "operator": "/",
+                  "right": "Value #exec_diff (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "C_tm(s)/exe",
+                "binary": {
+                  "left": "Value #cpu_tm (sum)",
+                  "operator": "/",
+                  "right": "Value #exec (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "C_tm(s)/exe Diff",
+                "binary": {
+                  "left": "Value #cpu_diff (sum)",
+                  "operator": "/",
+                  "right": "Value #exec_diff (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "B_Gets/exe",
+                "binary": {
+                  "left": "Value #buffer_gets (sum)",
+                  "operator": "/",
+                  "right": "Value #exec (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "B_Gets/exe Diff",
+                "binary": {
+                  "left": "Value #bget_diff (sum)",
+                  "operator": "/",
+                  "right": "Value #exec_diff (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "D_Reads/exe",
+                "binary": {
+                  "left": "Value #disk_reads (sum)",
+                  "operator": "/",
+                  "right": "Value #exec (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "D_Reads/exe  Diff",
+                "binary": {
+                  "left": "Value #disk_reads_diff (sum)",
+                  "operator": "/",
+                  "right": "Value #exec_diff (sum)"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "Value #bget_diff": true,
+                  "Value #bget_diff (sum)": true,
+                  "Value #buffer_gets": true,
+                  "Value #buffer_gets (sum)": true,
+                  "Value #cpu_diff": true,
+                  "Value #cpu_diff (sum)": true,
+                  "Value #cpu_tm": true,
+                  "Value #cpu_tm (sum)": true,
+                  "Value #disk_reads (sum)": true,
+                  "Value #disk_reads_diff (sum)": true,
+                  "Value #etm_diff": false,
+                  "Value #exec": true,
+                  "Value #exec (sum)": true,
+                  "Value #exec_diff": true,
+                  "Value #exec_diff (sum)": true,
+                  "alias": true,
+                  "instance": true,
+                  "job": true,
+                  "plan_hash_value": true
+                },
+                "includeByName": {},
+                "indexByName": {
+                  "B_Gets/exe": 16,
+                  "B_Gets/exe Diff": 17,
+                  "C_tm(s)/exe": 14,
+                  "C_tm(s)/exe Diff": 15,
+                  "D_Reads/exe": 18,
+                  "D_Reads/exe  Diff": 19,
+                  "S_tm(s)/exe": 12,
+                  "S_tm(s)/exe Diff": 13,
+                  "Value #bget_diff (sum)": 9,
+                  "Value #buffer_gets (sum)": 6,
+                  "Value #cpu_diff (sum)": 7,
+                  "Value #cpu_tm (sum)": 4,
+                  "Value #disk_reads (sum)": 10,
+                  "Value #disk_reads_diff (sum)": 11,
+                  "Value #elapsed_tm (sum)": 2,
+                  "Value #etm_diff (sum)": 3,
+                  "Value #exec (sum)": 5,
+                  "Value #exec_diff (sum)": 8,
+                  "sql_id": 0,
+                  "sql_text": 1
+                },
+                "renameByName": {
+                  "C_tm(s)/exe": "",
+                  "D_Reads/exe": "",
+                  "Value #buffer_gets (sum)": "",
+                  "Value #cpu_tm (sum)": "",
+                  "Value #disk_reads (sum)": "",
+                  "Value #disk_reads_diff (sum)": "",
+                  "Value #elapsed_tm": "SQL time(s)",
+                  "Value #elapsed_tm (sum)": "SQL time(s)",
+                  "Value #etm_diff": "S_tm(s) Diff",
+                  "Value #etm_diff (sum)": "S_tm(s) Diff"
+                }
+              }
+            }
+          ],
+          "transparent": true,
+          "type": "table"
+        }
+      ],
+      "title": "Top SQLs per executions",
+      "type": "row"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "CI-TEC",
+    "Oracle",
+    "SQL"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(oracledb_up,job)",
+        "description": "group is defined in the Prometheus configuration file.",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Group",
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(oracledb_up,job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(oracledb_up{job=~\"$group\"},alias)",
+        "description": "alias",
+        "hide": 0,
+        "includeAll": false,
+        "label": "alias",
+        "multi": false,
+        "name": "alias",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(oracledb_up{job=~\"$group\"},alias)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": {
+          "selected": false,
+          "text": "1m",
+          "value": "1m"
+        },
+        "description": "Interval for refreshing the visualization of Graphs",
+        "hide": 0,
+        "label": "interval",
+        "name": "intv",
+        "options": [
+          {
+            "selected": false,
+            "text": "10s",
+            "value": "10s"
+          },
+          {
+            "selected": false,
+            "text": "30s",
+            "value": "30s"
+          },
+          {
+            "selected": true,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "selected": false,
+            "text": "12h",
+            "value": "12h"
+          }
+        ],
+        "query": "10s, 30s, 1m, 5m, 30m, 1h, 6h, 12h",
+        "queryValue": "",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "type": "interval"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "description": "Input SQL text (Min 5 chars.)",
+        "hide": 0,
+        "label": "SQL Text Filter",
+        "name": "filter",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "description": "Input the sql_id minimum first 5 characters.",
+        "hide": 0,
+        "label": "sql_id Filter (Min 5 chars.)",
+        "name": "sql_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "Off",
+          "value": "0"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Comparison",
+        "multi": false,
+        "name": "use_diff",
+        "options": [
+          {
+            "selected": false,
+            "text": "On",
+            "value": "1"
+          },
+          {
+            "selected": true,
+            "text": "Off",
+            "value": "0"
+          }
+        ],
+        "query": "On : 1, Off : 0",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "1d",
+          "value": "1d"
+        },
+        "description": "previous days, You can input directly.\nex) 4d, 6w",
+        "hide": 0,
+        "label": "Comp. Period",
+        "name": "diff_intv",
+        "options": [
+          {
+            "selected": true,
+            "text": "1d",
+            "value": "1d"
+          }
+        ],
+        "query": "1d",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Oracle SQLs",
+  "uid": "dcc89342-9be1-4fe2-818d-d7d38f75a0b4",
+  "version": 27,
+  "weekStart": ""
+}

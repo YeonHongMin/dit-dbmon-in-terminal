@@ -1,0 +1,2011 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.3.1"
+    },
+    {
+      "type": "panel",
+      "id": "piechart",
+      "name": "Pie chart",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "SQL Server Sessions",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "MS-SQL",
+        "Main"
+      ],
+      "targetBlank": false,
+      "title": "Main",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "MS-SQL",
+        "One"
+      ],
+      "targetBlank": false,
+      "title": "One",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "MS-SQL",
+        "SQL"
+      ],
+      "targetBlank": false,
+      "title": "SQL",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "MS-SQL",
+        "Others"
+      ],
+      "targetBlank": false,
+      "title": "Others",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 72,
+      "panels": [],
+      "title": "Active Session Summary",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 0,
+        "y": 1
+      },
+      "id": 106,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"})",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Session Count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 5,
+        "y": 1
+      },
+      "id": 99,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (command)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "command",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 10,
+        "y": 1
+      },
+      "id": 101,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (wait_type)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "wait_type",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 15,
+        "y": 1
+      },
+      "id": 109,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\", command!=\"AWAITING COMMAND\"}) by (session_id)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "session_id",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 98,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (db)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "db",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 0,
+        "y": 7
+      },
+      "id": 102,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (sql_handle)",
+          "hide": false,
+          "legendFormat": "{{sql_handle}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "SQL_ID",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 5,
+        "y": 7
+      },
+      "id": 100,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (status)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "status",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 10,
+        "y": 7
+      },
+      "id": 96,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (sql_handle)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "sql_id",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 5,
+        "x": 15,
+        "y": 7
+      },
+      "id": 97,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (program)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "program",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "unit": "short",
+          "unitScale": true
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 20,
+        "y": 7
+      },
+      "id": 94,
+      "options": {
+        "displayLabels": [],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Value",
+          "sortDesc": false,
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count(mssql_sess_wtime_sec{alias=~\"$alias\"}) by (username)",
+          "hide": false,
+          "legendFormat": "{{alias}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "username",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 73,
+      "panels": [],
+      "title": "Active Session Summary by session_id",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Active Session List",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "logical_reads (io)"
+            },
+            "properties": [
+              {
+                "id": "decimals"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "monitored_count"
+            },
+            "properties": [
+              {
+                "id": "decimals"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "elapsed_time (s)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/.*monitor_time.*/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIsoNoDateIfToday"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 93,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "elapsed_time (s)"
+          }
+        ]
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "mssql_sess_wtime_sec{alias=~\"$alias\", command!=\"AWAITING COMMAND\"}",
+          "format": "table",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{label_name}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "__name__": true,
+              "alias": true,
+              "blocking_session_id": true,
+              "hostname": true,
+              "instance": true,
+              "job": true,
+              "last_wait_type": true,
+              "net_address": true,
+              "statement_text": true,
+              "transaction_id": true,
+              "transaction_isolation_level": true,
+              "username": false,
+              "wait_type": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Time": 0,
+              "Value": 33,
+              "__name__": 1,
+              "alias": 2,
+              "blocking_session_id": 5,
+              "command": 6,
+              "cpu_time": 7,
+              "db": 8,
+              "elapsed_sec": 9,
+              "estimated_completion_time": 10,
+              "granted_query_memory": 11,
+              "hostname": 12,
+              "instance": 13,
+              "job": 14,
+              "last_wait_type": 15,
+              "logical_reads": 16,
+              "net_address": 17,
+              "open_transaction_count": 18,
+              "percent_complete": 19,
+              "physical_io_mb": 20,
+              "physical_read_mb": 21,
+              "physical_write_mb": 22,
+              "program": 23,
+              "query_hash": 24,
+              "row_count": 25,
+              "session_id": 3,
+              "start_time": 4,
+              "statement_text": 26,
+              "status": 27,
+              "transaction_id": 28,
+              "transaction_isolation_level": 29,
+              "used_menory_kb": 30,
+              "username": 31,
+              "wait_type": 32
+            },
+            "renameByName": {
+              "used_menory_kb": ""
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "cpu_time"
+              },
+              {
+                "dateFormat": "",
+                "destinationType": "time",
+                "targetField": "start_time"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "elapsed_sec"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "physical_io_mb"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "logical_reads"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "physical_read_mb"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "physical_write_mb"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "row_count"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "used_menory_kb"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "Time"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "cpu_time": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "elapsed_sec": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "logical_reads": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "physical_io_mb": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "physical_read_mb": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "physical_write_mb": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "row_count": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "session_id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "start_time": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "used_menory_kb": {
+                "aggregations": [
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "username": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Time (count)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "Time (lastNotNull)": {
+                "aggregations": [
+                  "min",
+                  "max"
+                ],
+                "operation": "aggregate"
+              },
+              "Value (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "cpu_time (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "elapsed_sec (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "logical_reads (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "physical_io_mb (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "physical_read_mb (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "physical_write_mb (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "row_count (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "session_id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "start_time": {
+                "aggregations": [
+                  "count"
+                ],
+                "operation": "aggregate"
+              },
+              "used_menory_kb (max)": {
+                "aggregations": [
+                  "sum"
+                ],
+                "operation": "aggregate"
+              },
+              "username": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "Time (lastNotNull) (min)",
+                "timezone": "utc"
+              },
+              {
+                "destinationType": "time",
+                "targetField": "Time (lastNotNull) (max)"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "binary": {
+              "left": "cpu_time (max) (sum)",
+              "operator": "/",
+              "right": "1000"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "binary": {
+              "left": "Value (max) (sum)",
+              "operator": "/",
+              "right": "1000"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value (max) (sum)": true,
+              "cpu_time (max) (sum)": true,
+              "row_count (max) (sum)": true,
+              "start_time (max)": true,
+              "start_time (min)": true,
+              "used_menory_kb (max) (sum)": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Time (lastNotNull) (max)": 3,
+              "Time (lastNotNull) (min)": 2,
+              "Value (max) (sum)": 8,
+              "Value (max) (sum) / 1000": 9,
+              "cpu_time (max) (sum)": 7,
+              "cpu_time (max) (sum) / 1000": 6,
+              "elapsed_sec (max) (sum)": 5,
+              "logical_reads (max) (sum)": 10,
+              "physical_io_mb (max) (sum)": 11,
+              "physical_read_mb (max) (sum)": 12,
+              "physical_write_mb (max) (sum)": 13,
+              "row_count (max) (sum)": 14,
+              "session_id": 0,
+              "start_time (count)": 4,
+              "used_menory_kb (max) (sum)": 15,
+              "username": 1
+            },
+            "renameByName": {
+              "Time (count) (sum)": "monitored_count",
+              "Time (lastNotNull) (max)": "monitor_time (end)",
+              "Time (lastNotNull) (min)": "monitor_time (start)",
+              "Value (max) (sum)": "",
+              "Value (max) (sum) / 1000": "wait_time (s)",
+              "cpu_time (max) (sum)": "",
+              "cpu_time (max) (sum) / 1000": "cpu_time (s)",
+              "elapsed_sec (max) (sum)": "elapsed_time (s)",
+              "logical_reads (max) (sum)": "logical_reads (io)",
+              "physical_io_mb (max) (sum)": "logical_r+w (mb)",
+              "physical_read_mb (max) (sum)": "physical_read (mb)",
+              "physical_write_mb (max) (sum)": "physical_write (mb)",
+              "row_count (max) (sum)": "row_count",
+              "session_id": "",
+              "start_time (count)": "monitored_count",
+              "start_time (max)": "monitor_time (end)",
+              "start_time (min)": "monitor_time (start)",
+              "used_menory_kb (max) (sum)": "used_memory (kb)",
+              "username": ""
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 108,
+      "panels": [],
+      "title": "Active Session List",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Active Session List",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sid"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blocking_sid"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "user"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "db"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/.*_tm.*/"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/.*(mb).*/"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "l. reads"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "decimals"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "status"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "client"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mem (kb)"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              },
+              {
+                "id": "decimals"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "command"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sql_id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sqltext"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 474
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 107,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "sqltext"
+          }
+        ]
+      },
+      "pluginVersion": "10.3.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "mssql_sess_wtime_sec{alias=~\"$alias\", session_id=~\".*$session_id.*\", sql_handle=~\"(?s)(?i).*$sql_id.*\", db=~\"(?s)(?i).*$db.*\", command=~\"(?s)(?i).*$command.*\", command!=\"AWAITING COMMAND\" }",
+          "format": "table",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{label_name}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "logical_reads"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "physical_read_mb"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "physical_write_mb"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "used_menory_kb"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "elapsed_sec"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "cpu_tm (s)",
+            "binary": {
+              "left": "cpu_time",
+              "operator": "/",
+              "right": "1000"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "wait_tm (s)",
+            "binary": {
+              "left": "Value",
+              "operator": "/",
+              "right": "1000"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value": true,
+              "__name__": true,
+              "alias": true,
+              "connection_id": true,
+              "cpu_time": true,
+              "estimated_completion_time": true,
+              "granted_query_memory": true,
+              "hostname": true,
+              "instance": true,
+              "job": true,
+              "last_wait_type": true,
+              "net_address": true,
+              "open_transaction_count": true,
+              "percent_complete": true,
+              "physical_io_mb": true,
+              "physical_read_mb": false,
+              "physical_write_mb": false,
+              "query_hash": true,
+              "row_count": true,
+              "start_time": true,
+              "statement_text": false,
+              "transaction_id": true,
+              "transaction_isolation_level": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Time": 2,
+              "Value": 17,
+              "__name__": 8,
+              "alias": 0,
+              "blocking_session_id": 5,
+              "command": 9,
+              "connection_id": 36,
+              "cpu_time": 15,
+              "cpu_tm (s)": 16,
+              "db": 7,
+              "elapsed_sec": 14,
+              "estimated_completion_time": 19,
+              "granted_query_memory": 20,
+              "hostname": 21,
+              "instance": 22,
+              "job": 1,
+              "last_wait_type": 23,
+              "logical_reads": 25,
+              "net_address": 13,
+              "open_transaction_count": 29,
+              "percent_complete": 30,
+              "physical_io_mb": 31,
+              "physical_read_mb": 26,
+              "physical_write_mb": 27,
+              "program": 32,
+              "row_count": 33,
+              "session_id": 4,
+              "sql_handle": 11,
+              "start_time": 3,
+              "statement_text": 12,
+              "status": 10,
+              "transaction_id": 34,
+              "transaction_isolation_level": 35,
+              "used_menory_kb": 24,
+              "username": 6,
+              "wait_tm (s)": 18,
+              "wait_type": 28
+            },
+            "renameByName": {
+              "Time": "",
+              "Value": "wait_time",
+              "alias": "host",
+              "blocking_session_id": "blocking_sid",
+              "command": "command",
+              "cpu_time": "",
+              "db": "db",
+              "elapsed_sec": "elap_tm (s)",
+              "estimated_completion_time": "",
+              "granted_query_memory": "",
+              "hostname": "client",
+              "instance": "",
+              "job": "",
+              "last_wait_type": "",
+              "logical_reads": "l. reads",
+              "net_address": "client",
+              "open_transaction_count": "",
+              "percent_complete": "",
+              "physical_io_mb": "",
+              "physical_read_mb": "p. read (mb)",
+              "physical_write_mb": "p. write (mb)",
+              "program": "",
+              "query_hash": "",
+              "session_id": "sid",
+              "sql_handle": "sql_id",
+              "start_time": "monitored_time",
+              "statement_text": "sqltext",
+              "status": "",
+              "used_menory_kb": "mem (kb)",
+              "username": "user",
+              "wait_type": "wait_type"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "CI-TEC",
+    "MS-SQL",
+    "Others"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(mssql_batch_requests,job)",
+        "description": "group is defined in the Prometheus configuration file.",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Group",
+        "multi": true,
+        "name": "group",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(mssql_batch_requests,job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(mssql_batch_requests{job=~\"$group\"},alias)",
+        "description": "alias",
+        "hide": 0,
+        "includeAll": false,
+        "label": "alias",
+        "multi": false,
+        "name": "alias",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(mssql_batch_requests{job=~\"$group\"},alias)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "description": "",
+        "hide": 0,
+        "label": "session_id",
+        "name": "session_id",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "label": "sql_id",
+        "name": "sql_id",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "label": "db",
+        "name": "db",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "hide": 0,
+        "label": "command",
+        "name": "command",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "SQL Server Sessions",
+  "uid": "ecf514a9-b666-48a5-9a30-612c79d6faa8",
+  "version": 24,
+  "weekStart": ""
+}

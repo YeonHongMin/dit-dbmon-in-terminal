@@ -1,0 +1,430 @@
+##################################################################################################################################
+### Custom SQL Server Metrics For SDS Cloud  #####################################################################################
+### YeonHong.Min 2024.10.30 CI-TEC           #####################################################################################
+##################################################################################################################################
+
+collector_name: mysql_custom
+
+# Similar to global.min_interval, but applies to the queries defined by this collector only.
+#min_interval: 0s
+
+metrics:
+  - metric_name: my_up
+    type: gauge
+    help: 'Stall time in seconds per database and I/O operation.'
+    values: [Value]
+    query: |
+      select 1 Value;
+
+  - metric_name: mysql_vesion
+    type: gauge
+    help: 'Stall time in seconds per database and I/O operation.'
+    key_labels:
+      - version
+      - comment
+      - compile_os
+    values: [Value]
+    query: |
+      select @@version version, @@version_comment comment, @@version_compile_os compile_os, 1 Value;
+
+
+  - metric_name: mysql_global_status
+    type: counter
+    help: 'Show Global Status;'
+    key_labels:
+      - Variable_name
+    values: [Value]
+    query: |
+      show global status where value regexp '^-?[0-9-.]+$';
+
+  - metric_name: mysql_global_var
+    type: gauge
+    help: 'Show Global Variables;'
+    key_labels:
+      - Variable_name
+    values: [Value]
+    query: |
+      show global variables 
+      where variable_name in ('max_connections','innodb_buffer_pool_size','innodb_log_file_size');
+
+  - metric_name: mysql_global_variables
+    type: gauge
+    help: 'Show Global Variables;'
+    key_labels:
+      - Variable_name
+    values: [Value]
+    query: |
+      show global variables
+      where MINUTE(NOW()) = 0
+        and SECOND(NOW()) BETWEEN 0 AND 14
+        and value REGEXP '^-?[0-9]+$';
+
+  - metric_name: mysql_global_variables
+    type: gauge
+    help: 'Show Global Variables;'
+    key_labels:
+      - Variable_name
+    values: [Value]
+    query: |
+      select Variable_name,
+             Case when cast(Value as char) = 'ON' then 1
+                  when cast(Value as char) = 'OFF' then 0
+                  else Value end Value
+        from (select 'autocommit' Variable_name, @@global.autocommit Value union all
+              select 'innodb_buffer_pool_dump_at_shutdown' Variable_name, @@global.innodb_buffer_pool_dump_at_shutdown Value union all
+              select 'innodb_buffer_pool_load_at_startup' Variable_name, @@global.innodb_buffer_pool_load_at_startup Value union all
+              select 'innodb_deadlock_detect' Variable_name, @@global.innodb_deadlock_detect Value union all
+              select 'innodb_read_only' Variable_name, @@global.innodb_read_only Value union all
+              select 'innodb_strict_mode' Variable_name, @@global.innodb_strict_mode Value union all
+              select 'log_bin' Variable_name, @@global.log_bin Value union all
+              select 'read_only' Variable_name, @@global.read_only Value union all
+              select 'skip_name_resolve' Variable_name, @@global.skip_name_resolve Value union all
+              select 'slow_query_log' Variable_name, @@global.slow_query_log Value) x
+        where MINUTE(NOW()) = 0
+          and SECOND(NOW()) BETWEEN 0 AND 14;
+
+  - metric_name: mysql_innodb_metrics
+    type: counter
+    help: 'information_schema.innodb_metrics'
+    key_labels:
+      - subsystem
+      - name
+    values: [count]
+    query: |
+      select subsystem, name, count 
+        FROM information_schema.innodb_metrics;
+
+  - metric_name: mysql_processlist
+    type: counter
+    help: 'information_schema.processlist'
+    key_labels:
+      - id
+      - user
+      - host_ip
+      - host_port
+      - db
+      - command
+      - state
+      - info
+    values: [time]
+    query: |
+      select id, user
+           , case when(locate(':', host)=0) then host else left(host,locate(':', host)-1) end host_ip
+           , case when(locate(':', host)=0) then '' else mid(host,locate(':', host)+1, 10) end host_port
+           , ifnull(db,'-') db
+           , command, time
+           , case when state = '' then '-' else state end state
+           , case when info is null then '-' else left(ifnull(info,''),100) end info
+        from information_schema.processlist
+       where ID != connection_id()
+         and command not in ('Daemon')
+         and ((command ='Sleep' and time = 0) or
+              (command<>'Sleep')
+             );
+
+  - metric_name: mysql_sql_digest_summary
+    type: counter
+    help: 'performance_schema.events_statements_summary_by_digest'
+    value_label: 'status'
+    values:
+      - sum_time_ms
+      - sum_lock_time_ms
+      - sum_count_star
+      - sum_rows_examined
+      - sum_rows_affected
+      - sum_rows_sent
+      - sum_created_tmp_disk_tables
+      - sum_created_tmp_tables
+      - sum_no_good_index_used
+      - sum_no_index_used
+      - sum_select_full_join
+      - sum_select_full_range_join
+      - sum_select_range
+      - sum_select_range_check
+      - sum_select_scan
+      - sum_sort_merge_passes
+      - sum_sort_range
+      - sum_sort_rows
+      - sum_sort_scan
+      - sum_errors
+      - sum_warnings
+
+    query: |
+      SELECT 
+             round(sum(sum_timer_wait)/1000000000,0) as sum_time_ms,
+             round(sum(sum_lock_time)/1000000000,0) as sum_lock_time_ms,
+             sum(count_star) as sum_count_star,
+             sum(sum_rows_examined) as sum_rows_examined,
+             sum(sum_rows_affected) as sum_rows_affected,
+             sum(sum_rows_sent) as sum_rows_sent,
+             sum(sum_created_tmp_disk_tables) as sum_created_tmp_disk_tables,
+             sum(sum_created_tmp_tables) as sum_created_tmp_tables,
+             sum(sum_no_good_index_used) as sum_no_good_index_used,
+             sum(sum_no_index_used) as sum_no_index_used,
+             sum(sum_select_full_join) as sum_select_full_join,
+             sum(sum_select_full_range_join) as sum_select_full_range_join,
+             sum(sum_select_range) as sum_select_range,
+             sum(sum_select_range_check) as sum_select_range_check,
+             sum(sum_select_scan) as sum_select_scan,
+             sum(sum_sort_merge_passes) as sum_sort_merge_passes,
+             sum(sum_sort_range) as sum_sort_range,
+             sum(sum_sort_rows) as sum_sort_rows,
+             sum(sum_sort_scan) as sum_sort_scan,
+             sum(sum_errors) as sum_errors,
+             sum(sum_warnings) as sum_warnings
+        FROM performance_schema.events_statements_summary_by_digest;
+
+  # Collected from sys.dm_io_virtual_file_stats
+  #
+
+  - metric_name: mysql_prepared_stmt_text
+    type: counter
+    help: 'Stall time in seconds per database and I/O operation.'
+    key_labels:
+      - object_instance_begin
+      - statement_id
+      - sql_text
+      - owner_thread_id 
+    values: [sum_time_ms]
+    query_ref: mysql_prepared_sql
+
+  - metric_name: mysql_prepared_stmt
+    type: counter
+    help: 'Stall time in seconds per database and I/O operation.'
+    key_labels:
+      - object_instance_begin
+      - statement_id
+    value_label: 'status'
+    values:
+      - count_star
+      - sum_lock_time_ms
+      - sum_errors
+      - sum_warnings
+      - sum_rows_affected
+      - sum_rows_sent
+      - sum_rows_examined
+      - sum_created_tmp_disk_tables
+      - sum_created_tmp_tables
+      - sum_sort_merge_passes
+      - sum_sort_rows
+      - sum_no_index_used         
+    query_ref: mysql_prepared_sql 
+
+  - metric_name: mysql_digest_stmt_text
+    type: counter
+    help: 'Stall time in seconds per database and I/O operation.'
+    key_labels:
+      - digest
+      - schema_name
+      - digest_text
+    values: [sum_time_ms]
+    query_ref: mysql_digest_sql
+
+  - metric_name: mysql_digest_stmt
+    type: counter
+    help: 'Stall time in seconds per database and I/O operation.'
+    key_labels:
+      - digest
+      - schema_name
+    value_label: 'status'
+    values:
+      - count_star
+      - sum_lock_time_ms
+      - sum_errors
+      - sum_warnings
+      - sum_rows_affected
+      - sum_rows_sent
+      - sum_rows_examined
+      - sum_created_tmp_disk_tables
+      - sum_created_tmp_tables
+      - sum_sort_merge_passes
+      - sum_sort_rows
+      - sum_no_index_used
+    query_ref: mysql_digest_sql
+
+  - metric_name: mysql_dbs
+    type: gauge
+    help: 'Show Global Variables;'
+    key_labels:
+      - schema_name
+      - engine
+    value_label: 'status'
+    values:
+      - table_count
+      - tot_mb
+      - data_mb
+      - index_mb
+      - data_free_mb
+      - table_rows
+    query: |
+      SELECT table_schema AS 'schema_name'
+           , engine AS 'engine'
+           , count(1) AS 'table_count'
+           , round(sum(data_length+index_length)/1024/1024,0) AS 'tot_mb'
+           , round(sum(data_length)/1024/1024,0) AS 'data_mb'
+           , round(sum(index_length)/1024/1024,0) AS 'index_mb'
+           , round(sum(data_free)/1024/1024,0) AS 'data_free_mb'
+           , sum(table_rows) table_rows
+        FROM information_schema.tables
+       WHERE table_schema NOT IN ('mysql', 'information_schema','performance_schema', 'sys')
+         and HOUR(NOW()) in (0, 12)
+         and MINUTE(NOW()) = 0
+         and SECOND(NOW()) BETWEEN 0 AND 14
+       GROUP BY table_schema, engine;
+
+  - metric_name: mysql_tables
+    type: gauge
+    help: 'Show Global Variables;'
+    key_labels:
+      - schema_name
+      - table_name
+      - table_type
+      - engine
+    value_label: 'status'
+    values:
+      - table_rows
+      - avg_row_length
+      - tot_mb
+      - data_mb
+      - index_mb
+      - data_free_mb
+    query: |
+      SELECT table_schema as 'schema_name'
+           , TABLE_NAME as 'table_name'
+           , table_type as 'table_type'
+           , ENGINE as 'engine'
+           , table_rows as 'table_rows'
+           , AVG_ROW_LENGTH as 'avg_row_length'
+           , ROUND((data_length+index_length)/1024/1024,0) AS 'tot_mb'
+           , round(data_length/1024/1024,0) AS 'data_mb'
+           , round(index_length/1024/1024,0) AS 'index_mb'
+           , round(data_free/1024/1024,0) AS 'data_free_mb'
+        FROM information_schema.tables
+       WHERE table_schema NOT IN ('mysql', 'information_schema','performance_schema', 'sys')
+         and HOUR(NOW()) in (0, 12)
+         and MINUTE(NOW()) = 0
+         and SECOND(NOW()) BETWEEN 0 AND 14
+       ORDER BY table_schema, TABLE_NAME;
+
+  - metric_name: mysql_partitions
+    type: gauge
+    help: 'Show Global Variables;'
+    key_labels:
+      - schema_name
+      - table_name
+      - part_name
+      - part_method
+    value_label: 'status'
+    values:
+      - table_rows
+      - tot_mb
+      - data_mb
+      - index_mb
+    query: |
+      SELECT table_schema as 'schema_name'
+           , TABLE_NAME as 'table_name'
+           , partition_name   as 'part_name'
+           , partition_method as 'part_method'
+           , TABLE_ROWS as table_rows
+           , ROUND((data_length+index_length)/1024/1024,0) AS 'tot_mb'
+           , round(data_length/1024/1024,0) AS 'data_mb'
+           , round(index_length/1024/1024,0) AS 'index_mb'
+        FROM information_schema.PARTITIONS
+       WHERE partition_method IS NOT null
+         and HOUR(NOW()) in (0, 12)
+         and MINUTE(NOW()) = 0
+         and SECOND(NOW()) BETWEEN 0 AND 14
+       ORDER BY table_schema, TABLE_NAME, partition_name;
+
+  - metric_name: mysql_indexes
+    type: gauge
+    help: 'Show Global Variables;'
+    key_labels:
+      - schema_name
+      - table_name
+      - index_name
+      - uniq
+      - index_type
+      - columns
+    values:
+      - cardinality
+    query: |
+      SELECT table_schema as 'schema_name'
+           , table_name   as 'table_name'
+           , index_name   as 'index_name'
+           , case when NON_UNIQUE = 0 then 'U' else 'N' end as 'uniq'
+           , index_type   as 'index_type'
+           , GROUP_CONCAT(column_name ORDER BY SEQ_IN_INDEX SEPARATOR ', ') as 'columns'
+           , MAX(cardinality) as 'cardinality'
+        FROM information_schema.STATISTICS
+       WHERE table_schema NOT IN ('mysql', 'information_schema','performance_schema', 'sys')
+         and HOUR(NOW()) in (0, 12)
+         and MINUTE(NOW()) = 0
+         and SECOND(NOW()) BETWEEN 0 AND 14
+       GROUP BY table_schema, table_name, index_name, NON_UNIQUE, index_type;
+
+
+
+queries:
+  # Populates `mssql_io_stall` and `mssql_io_stall_total`
+  - query_name: mysql_prepared_sql
+    query: |
+      SELECT y.owner_thread_id
+           , y.object_instance_begin
+           , y.statement_id
+           , left(y.sql_text,100) sql_text
+           , round(y.sum_timer_execute/1000000000,0) sum_time_ms
+           , round(y.sum_lock_time/1000000000,0) sum_lock_time_ms
+           , y.count_execute as count_star
+           , y.sum_errors
+           , y.sum_warnings
+           , y.sum_rows_affected
+           , y.sum_rows_sent
+           , y.sum_rows_examined
+           , y.sum_created_tmp_disk_tables
+           , y.sum_created_tmp_tables
+           , y.sum_sort_merge_passes
+           , y.sum_sort_rows
+           , y.sum_no_index_used
+        from (SELECT owner_thread_id
+                   , object_instance_begin
+                   , sum_timer_execute
+                   , RANK() OVER (PARTITION BY owner_thread_id ORDER BY sum_timer_execute DESC) AS rank1
+                   , RANK() OVER (ORDER BY sum_timer_execute DESC) AS rank2
+                FROM performance_schema.prepared_statements_instances) x,
+             performance_schema.prepared_statements_instances y
+       where (x.rank1 <= 10 or x.rank2 <= 300)
+         and x.object_instance_begin = y.object_instance_begin
+       order by sum_time_ms desc  
+       limit 300;
+
+
+  - query_name: mysql_digest_sql
+    query: |
+      SELECT ifnull(SCHEMA_NAME, 'NONE') as schema_name,
+             digest as digest,
+             LEFT(DIGEST_TEXT, 100) as digest_text,
+             sum(COUNT_STAR) as count_star,
+             round(sum(SUM_TIMER_WAIT)/1000000000,0) as sum_time_ms,
+             round(sum(SUM_LOCK_TIME)/1000000000,0) as sum_lock_time_ms,
+             sum(SUM_ERRORS) as sum_errors,
+             sum(SUM_WARNINGS) as sum_warnings,
+             sum(SUM_ROWS_AFFECTED) as sum_rows_affected,
+             sum(SUM_ROWS_SENT) as sum_rows_sent,
+             sum(SUM_ROWS_EXAMINED) as sum_rows_examined,
+             sum(SUM_CREATED_TMP_DISK_TABLES) as sum_created_tmp_disk_tables,
+             sum(SUM_CREATED_TMP_TABLES) as sum_created_tmp_tables,
+             sum(SUM_SORT_MERGE_PASSES) as sum_sort_merge_passes,
+             sum(SUM_SORT_ROWS) as sum_sort_rows,
+             sum(SUM_NO_INDEX_USED) as sum_no_index_used
+        FROM (SELECT *
+                FROM performance_schema.events_statements_summary_by_digest
+               WHERE LAST_SEEN > DATE_SUB(NOW(), INTERVAL 7200 SECOND)
+               ORDER BY SUM_TIMER_WAIT DESC
+               LIMIT 300
+             ) Q
+       GROUP BY Q.SCHEMA_NAME,
+                Q.DIGEST,
+                Q.DIGEST_TEXT
+       ORDER BY sum_time_ms DESC;
+

@@ -1,5 +1,7 @@
 # DOC-4: Database Design (데이터베이스 설계)
 
+> **Status**: Archived. SQLite 기반 히스토리 저장소 설계이며, 현재 DIT는 인메모리 Ring Buffer(MetricsBuffer)만 사용한다. 향후 히스토리 기능 구현 시 참고 가능.
+
 ## 4.1 ERD (Entity Relationship Diagram)
 
 ```mermaid

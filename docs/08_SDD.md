@@ -2,7 +2,7 @@
 
 ## 8.1 개요
 
-DIT (DBmon-In-Terminal)는 SSH 터미널 환경에서 Oracle DB를 실시간 모니터링하는 Java 기반 TUI 도구이다. 단일 fat JAR로 배포되며, 외부 에이전트/웹서버 없이 JDBC 직접 쿼리로 동작한다.
+DIT (DBmon-In-Terminal)는 SSH 터미널 환경에서 Oracle / Tibero DB를 실시간 모니터링하는 Java 기반 TUI 도구이다. 단일 fat JAR로 배포되며, 외부 에이전트/웹서버 없이 JDBC 직접 쿼리로 동작한다.
 
 ### 기술 스택
 
@@ -11,14 +11,15 @@ DIT (DBmon-In-Terminal)는 SSH 터미널 환경에서 Oracle DB를 실시간 모
 | 언어 | Java | 8+ (source/target 1.8) |
 | 빌드 | Maven + maven-shade-plugin | 3.x |
 | TUI | Lanterna (Screen layer) | 3.1.3 |
-| DB 드라이버 | Oracle JDBC (ojdbc8) | 23.3.0.23.09 |
-| 패키지 | `io.dit.oracle` | 0.1.0 |
-| 배포 형태 | Fat JAR (의존성 포함) | ~7.5 MB |
+| Oracle 드라이버 | ojdbc8 | 23.3.0.23.09 |
+| Tibero 드라이버 | tibero7-jdbc | 7.0 |
+| 패키지 | `io.dit.bridge` | 0.1.0 |
+| 배포 형태 | Fat JAR (의존성 포함) | - |
 
 ### 설계 제약
 
 - GUI/웹서버 기동 금지 (보안 정책)
-- 외부 JSON 라이브러리 사용 금지 (자체 `toJson()`/`quote()`)
+- 외부 JSON 라이브러리 사용 금지 (자체 `JsonUtil.toJson()`/`JsonUtil.quote()`)
 - Java 8 호환 (`var` 사용 금지, diamond/lambda 허용)
 - 단일 JAR 파일 배포 (maven-shade-plugin)
 
@@ -27,32 +28,44 @@ DIT (DBmon-In-Terminal)는 SSH 터미널 환경에서 Oracle DB를 실시간 모
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  CLI / TUI                                              │
-│  OracleBridgeMain (진입점, 명령어 라우팅)                    │
-│  OracleMonitorTui (Lanterna Screen 대시보드)               │
+│  DitMain (진입점, --dbms-type 분기, 명령어 라우팅)          │
+│  OracleMonitorTui / TiberoMonitorTui (Lanterna 대시보드)  │
 ├─────────────────────────────────────────────────────────┤
-│  데이터 처리                                              │
+│  API (인터페이스)                                         │
+│  DbmsCollector / DbmsConnectionFactory / WaitDeltaTracker│
+├─────────────────────────────────────────────────────────┤
+│  데이터 처리 (DBMS-agnostic)                              │
 │  MetricsBuffer (Ring Buffer + Sparkline)                 │
-│  WaitEventDeltaTracker (V$SYSTEM_EVENT 델타 연산)          │
+│  JsonUtil (경량 JSON 직렬화)                              │
 ├─────────────────────────────────────────────────────────┤
-│  데이터 수집                                              │
-│  OracleCollector (V$ 뷰 JDBC 쿼리)                       │
+│  Oracle 구현                    │  Tibero 구현            │
+│  OracleCollector                │  TiberoCollector        │
+│  OracleConnectionFactory        │  TiberoConnectionFactory│
+│  OracleWaitDeltaTracker         │  TiberoWaitDeltaTracker │
 ├─────────────────────────────────────────────────────────┤
 │  인프라                                                  │
-│  Oracle JDBC (ojdbc8) + Lanterna Terminal                │
+│  Oracle JDBC (ojdbc8) + Tibero JDBC + Lanterna Terminal  │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ### 클래스 의존 관계
 
 ```
-OracleBridgeMain (진입점)
-├── OracleCollector          (CLI 명령어에서 직접 호출)
-├── WaitEventDeltaTracker    (monitor 명령어)
-└── OracleMonitorTui         (tui 명령어)
-    ├── OracleCollector      (collectAll)
-    ├── WaitEventDeltaTracker (실시간 Wait 델타)
-    ├── MetricsBuffer        (Sparkline 이력)
-    └── Lanterna Screen      (터미널 렌더링)
+DitMain (진입점, --dbms-type 분기)
+├── DbmsType                    (ORACLE | TIBERO enum)
+├── DbmsCollector               (인터페이스 → Oracle/Tibero Collector)
+├── DbmsConnectionFactory       (인터페이스 → Oracle/Tibero ConnectionFactory)
+├── WaitDeltaTracker            (인터페이스 → Oracle/Tibero WaitDeltaTracker)
+├── OracleMonitorTui            (tui 명령어, Oracle)
+│   ├── OracleCollector         (collectAll)
+│   ├── OracleWaitDeltaTracker  (실시간 Wait 델타)
+│   ├── MetricsBuffer           (Sparkline 이력)
+│   └── Lanterna Screen         (터미널 렌더링)
+└── TiberoMonitorTui            (tui 명령어, Tibero)
+    ├── TiberoCollector         (collectAll + V$SYSSTAT 내부 delta)
+    ├── TiberoWaitDeltaTracker  (실시간 Wait 델타)
+    ├── MetricsBuffer           (Sparkline 이력)
+    └── Lanterna Screen         (터미널 렌더링)
 ```
 
 ## 8.3 소스 파일 구조
@@ -60,18 +73,33 @@ OracleBridgeMain (진입점)
 ```
 java/oracle-bridge/
 ├── pom.xml
-└── src/main/java/io/dit/oracle/
-    ├── OracleBridgeMain.java      # 628줄 - 진입점, CLI 라우팅, JSON 직렬화
-    ├── OracleCollector.java       # 382줄 - Oracle V$ 뷰 JDBC 쿼리 계층
-    ├── OracleMonitorTui.java      # 580줄 - Lanterna TUI 대시보드 렌더링
-    ├── MetricsBuffer.java         # 117줄 - Ring Buffer + Unicode Sparkline
-    └── WaitEventDeltaTracker.java # 121줄 - V$SYSTEM_EVENT 델타 연산
-                            합계: 1,828줄
+├── lib/
+│   └── tibero7-jdbc.jar           # Tibero JDBC 드라이버
+└── src/main/java/io/dit/bridge/
+    ├── DitMain.java               # 진입점, CLI 라우팅, JSON 직렬화
+    ├── DbmsType.java              # DBMS 타입 enum (ORACLE, TIBERO)
+    ├── api/
+    │   ├── DbmsCollector.java     # DBMS별 수집기 인터페이스
+    │   ├── DbmsConnectionFactory.java # DBMS별 접속 팩토리 인터페이스
+    │   └── WaitDeltaTracker.java  # Wait Event 델타 추적 인터페이스
+    ├── core/
+    │   ├── MetricsBuffer.java     # Ring Buffer + Unicode Sparkline
+    │   └── JsonUtil.java          # 경량 JSON 직렬화
+    ├── oracle/
+    │   ├── OracleCollector.java   # Oracle V$ 뷰 JDBC 쿼리
+    │   ├── OracleConnectionFactory.java # Oracle JDBC 접속
+    │   ├── OracleWaitDeltaTracker.java  # V$SYSTEM_EVENT 델타 연산
+    │   └── OracleMonitorTui.java  # Lanterna TUI 대시보드
+    └── tibero/
+        ├── TiberoCollector.java   # Tibero V$ 뷰 쿼리 + V$SYSSTAT 델타
+        ├── TiberoConnectionFactory.java # Tibero JDBC 접속
+        ├── TiberoWaitDeltaTracker.java  # V$SYSTEM_EVENT 델타 연산
+        └── TiberoMonitorTui.java  # Lanterna TUI 대시보드
 ```
 
 ## 8.4 명령어 체계
 
-`--command` 파라미터로 9개 명령어 분기:
+`--dbms-type oracle|tibero` + `--command` 파라미터로 분기:
 
 | 명령어 | 용도 | 입력 | 출력 |
 |--------|------|------|------|
@@ -89,10 +117,11 @@ java/oracle-bridge/
 
 ```bash
 java -jar dit-dbms-bridge.jar \
+    --dbms-type oracle \
     --command tui \
     --host 192.168.0.172 --port 1521 \
     --service-name DEV \
-    --user system --password manager \
+    --user <monitoring user> --password <user password> \
     --interval 6 \
     --tcp-connect-timeout-seconds 5 \
     --call-timeout-ms 5000
@@ -107,9 +136,9 @@ java -jar dit-dbms-bridge.jar \
 ```
 String[] args
   → parseArgs() → Map<String, String>
-  → openConnection() → java.sql.Connection
-  → OracleCollector.queryX() → Map/List
-  → toJson() → JSON 문자열
+  → DbmsConnectionFactory.openConnection() → java.sql.Connection
+  → DbmsCollector.queryX() → Map/List
+  → JsonUtil.toJson() → JSON 문자열
   → System.out.println()
 ```
 
@@ -120,9 +149,9 @@ Main Loop (100ms poll):
   ├─ pollInput() → handleKey() → 스크롤/선택 상태 변경
   │
   ├─ collectData() (intervalMs마다)
-  │   ├─ OracleCollector.collectAll()     ← per-query 에러 격리
-  │   ├─ WaitEventDeltaTracker.queryDelta() ← 실시간 Wait 델타
-  │   ├─ OracleCollector.mapMetrics()     ← 메트릭 정규화
+  │   ├─ DbmsCollector.collectAll()       ← per-query 에러 격리
+  │   ├─ WaitDeltaTracker.queryDelta()    ← 실시간 Wait 델타
+  │   ├─ DbmsCollector.mapMetrics()       ← 메트릭 정규화
   │   ├─ MetricsBuffer.push()            ← Sparkline 이력 저장
   │   └─ synchronized(dataLock) { 데이터 저장 }
   │
@@ -131,26 +160,29 @@ Main Loop (100ms poll):
   └─ render() (변경 시에만)
       ├─ Title Bar → 인스턴스@호스트 | 버전 | 수집시각
       ├─ Load Profile (좌 50%) → 13개 메트릭 + Sparkline
-      ├─ Top Waits (우 50%) → WaitEventDelta 12개
+      ├─ Top Waits (우 50%) → WaitDelta 12개
       ├─ Sessions → 스크롤 가능한 세션 테이블
-      ├─ Top SQL → CPU time 기준 SQL 목록
+      ├─ Top SQL → elapsed_time 기준 SQL 목록
       └─ Footer → 키 안내, 수집 소요시간, 에러
       → screen.refresh(DELTA) → 변경분만 업데이트
 ```
 
-### Monitor 명령어 파이프라인
+## 8.6 Oracle vs Tibero 차이점
 
-```
-While running:
-  ├─ OracleCollector.querySysmetric/Sysstat/Sessions/SqlHotspots
-  ├─ WaitEventDeltaTracker.queryDelta()
-  ├─ OracleCollector.mapMetrics()
-  ├─ JSON Frame → JSONL 파일 append (1줄/주기)
-  ├─ 텍스트 스크린 → capture 파일 + stdout
-  └─ sleep(intervalSeconds)
-```
+| 항목 | Oracle | Tibero |
+|------|--------|--------|
+| Load Profile 소스 | V$SYSMETRIC (즉시 rate) | V$SYSSTAT delta (앱 시간 기반) |
+| DB Time / CPU | V$SYSMETRIC | V$SYS_TIME_MODEL delta |
+| Wait Event 컬럼 | EVENT, WAIT_CLASS | NAME, CLASS (STAT_CLASS_xxx) |
+| Sessions 필터 | `type='USER'`, SYS_CONTEXT | `type='WTHR'`, V$MYSTAT SID |
+| Sessions Wait(s) | SECONDS_IN_WAIT | SQL_ET (SQL 경과 시간) |
+| 세션 프로그램 | PROGRAM | PROG_NAME |
+| Physical Writes | `physical writes` stat | `dbwr multi block writes - block count` |
+| Top N 제한 | FETCH FIRST N ROWS ONLY | ROWNUM |
+| 서버 시간 | SYSDATE (정상) | 신뢰 불가 → 앱 시간 사용 |
+| JDBC URL | `jdbc:oracle:thin:@//host:port/svc` | `jdbc:tibero:thin:@host:port:db` |
 
-## 8.6 에러 처리
+## 8.7 에러 처리
 
 | 상황 | 처리 | 사용자 표시 |
 |------|------|------------|
@@ -161,13 +193,13 @@ While running:
 | collectAll() 개별 쿼리 실패 | 빈 데이터 반환, 나머지 쿼리 계속 | 해당 패널 비어있음 |
 | 터미널 크기 부족 (40x10 미만) | 렌더링 스킵 | 빈 화면 |
 
-## 8.7 빌드 및 배포
+## 8.8 빌드 및 배포
 
 ### 빌드
 
 ```bash
 mvn clean package -f java/oracle-bridge/pom.xml
-# 출력: java/oracle-bridge/target/dit-dbms-bridge.jar (~7.5 MB)
+# 출력: java/oracle-bridge/target/dit-dbms-bridge.jar (fat JAR)
 ```
 
 ### 배포
@@ -175,8 +207,8 @@ mvn clean package -f java/oracle-bridge/pom.xml
 Fat JAR 단일 파일 복사:
 
 ```bash
-scp java/oracle-bridge/target/dit-dbms-bridge.jar oracle@192.168.0.172:~/
-ssh oracle@192.168.0.172 'java -jar dit-dbms-bridge.jar --command tui ...'
+scp java/oracle-bridge/target/dit-dbms-bridge.jar user@server:~/
+ssh user@server 'java -jar dit-dbms-bridge.jar --dbms-type oracle --command tui ...'
 ```
 
 ### 런타임 디렉토리
@@ -188,7 +220,7 @@ ssh oracle@192.168.0.172 'java -jar dit-dbms-bridge.jar --command tui ...'
 └── cycles/                      # 모니터링 사이클 아카이브
 ```
 
-## 8.8 설계 결정 기록 (ADR)
+## 8.9 설계 결정 기록 (ADR)
 
 ### ADR-1: Lanterna Screen vs Lanterna GUI vs Textual(Python)
 
@@ -201,13 +233,13 @@ ssh oracle@192.168.0.172 'java -jar dit-dbms-bridge.jar --command tui ...'
 ### ADR-2: 외부 JSON 라이브러리 미사용
 
 - 장점: 의존성 최소화, JAR 크기 절약, 빌드 단순
-- 구현: 재귀적 `toJson()` + `quote()` (Map, List, String, Number, Boolean, null 처리)
+- 구현: `JsonUtil.toJson()` + `JsonUtil.quote()` (Map, List, String, Number, Boolean, null 처리)
 
 ### ADR-3: V$EVENTMETRIC → V$SYSTEM_EVENT 델타
 
 - V$EVENTMETRIC: 60초 보고 주기, 부하 중단 후에도 값 유지
 - V$SYSTEM_EVENT 델타: 수집 주기(6초)에 맞는 실시간 반영, 즉시 0으로 하락
-- WaitEventDeltaTracker 구현으로 해결
+- WaitDeltaTracker 인터페이스 + Oracle/Tibero 구현으로 해결
 
 ### ADR-4: Per-query 에러 격리
 
@@ -215,8 +247,16 @@ ssh oracle@192.168.0.172 'java -jar dit-dbms-bridge.jar --command tui ...'
 - 실패한 메트릭은 빈 Map/List로 대체
 - TUI는 null-safe하게 렌더링
 
-### ADR-5: 자기 세션 필터링
+### ADR-5: Multi-DBMS 인터페이스 아키텍처
 
-- JDBC 프로퍼티 `v$session.program = "dit-bridge"` 설정
-- Sessions 쿼리에서 `NVL(s.program, '-') <> 'dit-bridge'` 조건
-- 모니터링 도구 자체 세션이 대시보드에 표시되지 않음
+- `DbmsCollector`, `DbmsConnectionFactory`, `WaitDeltaTracker` 인터페이스 정의
+- DBMS별 구현체를 별도 패키지로 분리 (oracle/, tibero/)
+- `--dbms-type` CLI 인자로 런타임 구현체 선택
+- 새 DBMS 추가 시 인터페이스 구현 + DitMain 분기 추가만 필요
+
+### ADR-6: Tibero V$SYSSTAT 내부 델타
+
+- Tibero에 V$SYSMETRIC이 없으므로 V$SYSSTAT + V$SYS_TIME_MODEL delta로 대체
+- TiberoCollector 내부에 prevSysstat/prevTimestamp 상태 보유
+- 서버 시간 신뢰 불가 → System.currentTimeMillis() 기반 delta 계산
+- 첫 번째 호출은 baseline (rate = 0)
