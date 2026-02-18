@@ -71,7 +71,7 @@ DitMain (진입점, --dbms-type 분기)
 ## 8.3 소스 파일 구조
 
 ```
-java/oracle-bridge/
+java/dit-bridge/
 ├── pom.xml
 ├── lib/
 │   └── tibero7-jdbc.jar           # Tibero JDBC 드라이버
@@ -198,8 +198,8 @@ Main Loop (100ms poll):
 ### 빌드
 
 ```bash
-mvn clean package -f java/oracle-bridge/pom.xml
-# 출력: java/oracle-bridge/target/dit-dbms-monitor.jar (fat JAR)
+mvn clean package -f java/dit-bridge/pom.xml
+# 출력: java/dit-bridge/target/dit-dbms-monitor.jar (fat JAR)
 ```
 
 ### 배포
@@ -207,7 +207,7 @@ mvn clean package -f java/oracle-bridge/pom.xml
 Fat JAR 단일 파일 복사:
 
 ```bash
-scp java/oracle-bridge/target/dit-dbms-monitor.jar user@server:~/
+scp java/dit-bridge/target/dit-dbms-monitor.jar user@server:~/
 ssh user@server 'java -jar dit-dbms-monitor.jar --dbms-type oracle --command tui ...'
 ```
 

@@ -10,7 +10,7 @@
 ## 7.2 프로젝트 구조
 
 ```
-java/oracle-bridge/
+java/dit-bridge/
 ├── pom.xml
 └── src/main/java/io/dit/oracle/
     ├── OracleBridgeMain.java   -- Entry point, CLI 라우팅
@@ -53,5 +53,5 @@ java/oracle-bridge/
 ## 7.7 빌드 및 검증
 
 ```bash
-mvn clean package -f java/oracle-bridge/pom.xml
+mvn clean package -f java/dit-bridge/pom.xml
 ```

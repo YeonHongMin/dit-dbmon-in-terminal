@@ -13,17 +13,17 @@ SSH 터미널 환경에서 Oracle / Tibero DB를 실시간 모니터링하는 Ja
 
 ```bash
 # 빌드
-mvn clean package -f java/oracle-bridge/pom.xml
+mvn clean package -f java/dit-bridge/pom.xml
 
 # Oracle TUI
-java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type oracle --command tui \
   --host <db-host> --port 1521 \
   --service-name <service> \
   --user <monitoring user> --password <user password>
 
 # Tibero TUI
-java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type tibero --command tui \
   --host <db-host> --port 8629 \
   --service-name <dbname> \
@@ -168,7 +168,7 @@ java -jar dit-dbms-monitor.jar --command report --record-file run.jsonl --output
 ## 아키텍처
 
 ```
-java/oracle-bridge/src/main/java/io/dit/bridge/
+java/dit-bridge/src/main/java/io/dit/bridge/
   DitMain.java                -- 진입점, CLI 라우팅, JSON 직렬화
   DbmsType.java               -- DBMS 타입 enum (ORACLE, TIBERO, ...)
 
@@ -197,10 +197,10 @@ java/oracle-bridge/src/main/java/io/dit/bridge/
 ## 빌드
 
 ```bash
-mvn clean package -f java/oracle-bridge/pom.xml
+mvn clean package -f java/dit-bridge/pom.xml
 ```
 
-출력: `java/oracle-bridge/target/dit-dbms-monitor.jar` (fat JAR, Oracle JDBC + Tibero JDBC + Lanterna 포함)
+출력: `java/dit-bridge/target/dit-dbms-monitor.jar` (fat JAR, Oracle JDBC + Tibero JDBC + Lanterna 포함)
 
 ## 기술 스택
 

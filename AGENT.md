@@ -25,7 +25,7 @@
 ## 아키텍처 (15 Java 파일, 5 패키지)
 
 ```
-java/oracle-bridge/src/main/java/io/dit/bridge/
+java/dit-bridge/src/main/java/io/dit/bridge/
   DitMain.java                -- 진입점, CLI 라우팅, --dbms-type 분기
   DbmsType.java               -- DBMS 타입 enum (ORACLE, TIBERO)
 
@@ -86,16 +86,16 @@ DBA 권한 없이 최소 권한으로 운영:
 
 ```bash
 # 빌드
-mvn clean package -f java/oracle-bridge/pom.xml
+mvn clean package -f java/dit-bridge/pom.xml
 
 # Oracle TUI
-java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type oracle --command tui \
   --host <host> --port 1521 --service-name <service> \
   --user <monitoring user> --password <user password> --interval 6
 
 # Tibero TUI
-java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type tibero --command tui \
   --host <host> --port 8629 --service-name <dbname> \
   --user <monitoring user> --password <user password> --interval 6
@@ -125,7 +125,7 @@ java -jar dit-dbms-monitor.jar --dbms-type oracle --command monitor --interval-s
 8. 새 DBMS 추가: `DbmsCollector`, `DbmsConnectionFactory`, `WaitDeltaTracker` 인터페이스 구현.
 
 ## 새 에이전트 시작 체크리스트
-1. `java/oracle-bridge/` 디렉터리 확인.
-2. `mvn clean package -f java/oracle-bridge/pom.xml` 빌드 확인.
+1. `java/dit-bridge/` 디렉터리 확인.
+2. `mvn clean package -f java/dit-bridge/pom.xml` 빌드 확인.
 3. 수정 후 반드시 빌드 → 배포 → 테스트 사이클 수행.
 4. 새 DBMS 추가 시 `api/` 인터페이스 준수, `DbmsType` enum 확장, `DitMain` 분기 추가.

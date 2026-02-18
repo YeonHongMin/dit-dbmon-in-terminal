@@ -3,7 +3,7 @@
 ## Progress Snapshot (2026-02-18)
 
 ### 완료
-- Java Maven 프로젝트 구조 생성 (`java/oracle-bridge/`)
+- Java Maven 프로젝트 구조 생성 (`java/dit-bridge/`)
 - Lanterna 3.1.3 TUI 라이브러리 통합
 - Multi-DBMS 인터페이스 아키텍처 구현 (15파일, 5패키지):
   - `io.dit.bridge/` - DitMain (진입점), DbmsType (enum)
@@ -34,16 +34,16 @@
 
 ```bash
 # 빌드
-mvn clean package -f java/oracle-bridge/pom.xml
+mvn clean package -f java/dit-bridge/pom.xml
 
 # Oracle TUI
-java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type oracle --command tui \
   --host 192.168.0.172 --port 1521 --service-name DEV \
   --user <monitoring user> --password <user password> --interval 6
 
 # Tibero TUI
-java -jar java/oracle-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type tibero --command tui \
   --host 192.168.0.153 --port 8629 --service-name TPROD \
   --user <monitoring user> --password <user password> --interval 6
