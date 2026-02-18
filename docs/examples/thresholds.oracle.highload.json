@@ -1,0 +1,43 @@
+{
+  "default": {
+    "spike_fraction": 0.25,
+    "metrics": {
+      "host_cpu": {
+        "warning": 82,
+        "critical": 95
+      },
+      "wait_time": {
+        "warning": 130,
+        "critical": 175
+      }
+    }
+  },
+  "oracle": {
+    "oracle_delta_scaling": {
+      "logical_reads_per_sec_to_k": 0.3,
+      "redo_generated_per_sec_to_mb": 0.000001,
+      "db_wait_ratio_to_wait_ms": 1.8,
+      "physical_io_ops_per_sec_to_mb": 0.009,
+      "aas_to_blocked_sessions": 0.6,
+      "aas_blocked_base": 5.0
+    },
+    "metrics": {
+      "active_sessions": {
+        "warning": 55,
+        "critical": 72
+      },
+      "blocked_sessions": {
+        "warning": 5,
+        "critical": 10
+      },
+      "sql_exec": {
+        "warning": 900,
+        "critical": 1080
+      },
+      "redo_log": {
+        "warning": 125,
+        "critical": 170
+      }
+    }
+  }
+}

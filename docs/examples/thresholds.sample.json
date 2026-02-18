@@ -1,0 +1,36 @@
+{
+  "default": {
+    "spike_fraction": 0.2,
+    "metrics": {
+      "host_cpu": {
+        "warning": 80,
+        "critical": 95
+      },
+      "wait_time": {
+        "warning": 120,
+        "critical": 160
+      }
+    }
+  },
+  "oracle": {
+    "oracle_delta_scaling": {
+      "logical_reads_per_sec_to_k": 0.2,
+      "redo_generated_per_sec_to_mb": 0.000001,
+      "db_wait_ratio_to_wait_ms": 1.4
+    },
+    "metrics": {
+      "active_sessions": {
+        "warning": 45,
+        "critical": 65
+      }
+    }
+  },
+  "mysql": {
+    "metrics": {
+      "sql_error": {
+        "warning": 8,
+        "critical": 15
+      }
+    }
+  }
+}
