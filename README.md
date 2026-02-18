@@ -1,14 +1,14 @@
 # DIT (DBmon-In-Terminal)
 
-Terminal-native Oracle database monitoring tool. Single fat JAR (Java 8+) with interactive TUI dashboard.
+SSH 터미널 환경에서 Oracle DB를 실시간 모니터링하는 Java 기반 TUI 도구. 단일 fat JAR (Java 8+)로 배포.
 
-## Quick start
+## 빠른 시작
 
 ```bash
-# Build
+# 빌드
 mvn clean package -f java/oracle-bridge/pom.xml
 
-# Run TUI monitor
+# TUI 모니터 실행
 java -jar java/oracle-bridge/target/dit-dbms-bridge.jar \
   --command tui \
   --host <db-host> --port 1521 \
@@ -17,9 +17,9 @@ java -jar java/oracle-bridge/target/dit-dbms-bridge.jar \
   --interval 6
 ```
 
-## Monitoring Screen (TUI)
+## 모니터링 화면 (TUI)
 
-Oracle TUI monitor with Lanterna (Java). Load profile sparklines, real-time waits, active sessions, top SQL:
+Lanterna Screen 기반 Oracle TUI 대시보드. Load Profile 스파크라인, 실시간 Wait 델타, 활성 세션, Top SQL:
 
 ```text
  DIT | DEV@single19cfs | 19.0.0.0.0 | Collected: 11:40:29
@@ -58,60 +58,80 @@ Oracle TUI monitor with Lanterna (Java). Load profile sparklines, real-time wait
  Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: 6s  Collect: 225ms
 ```
 
-## Key bindings
+## 키 바인딩
 
-- `Q` / `Esc`: quit
-- `Up` / `Down`: select session
-- `PgUp` / `PgDn`: scroll sessions (10 rows)
-- `Home` / `End`: jump to first/last session
-- `Tab`: scroll SQL panel
-- `R`: force refresh
+| 키 | 동작 |
+|----|------|
+| `Q` / `Esc` | 종료 |
+| `Up` / `Down` | 세션 선택 |
+| `PgUp` / `PgDn` | 세션 스크롤 (10행) |
+| `Home` / `End` | 첫/마지막 세션 이동 |
+| `Tab` | SQL 패널 스크롤 |
+| `R` | 강제 새로고침 |
 
-## CLI commands
+## CLI 명령어
 
 ```bash
-# Health check
+# 접속 확인
 java -jar dit-dbms-bridge.jar --command health --host <host> --port 1521 --service-name <svc> --user <user> --password <pwd>
 
-# Metrics snapshot
+# 메트릭 스냅샷 (JSON)
 java -jar dit-dbms-bridge.jar --command metrics ...
 
-# Active sessions
+# 활성 세션 목록 (JSON)
 java -jar dit-dbms-bridge.jar --command sessions ...
 
-# Wait events
+# 대기 이벤트 (JSON)
 java -jar dit-dbms-bridge.jar --command waits ...
 
-# SQL hotspots
+# SQL 핫스팟 (JSON)
 java -jar dit-dbms-bridge.jar --command sql ...
 
-# Monitor (continuous JSON output)
-java -jar dit-dbms-bridge.jar --command monitor --interval 5 ...
+# 연속 모니터링 + JSONL 녹화
+java -jar dit-dbms-bridge.jar --command monitor --interval 5 --record-file run.jsonl ...
+
+# 녹화 파일 리포트 (Markdown)
+java -jar dit-dbms-bridge.jar --command report --record-file run.jsonl --output report.md
+
+# 세션 강제 종료
+java -jar dit-dbms-bridge.jar --command kill --sid <sid,serial#> ...
 ```
 
-## Architecture
+## 아키텍처
 
 ```
 java/oracle-bridge/src/main/java/io/dit/oracle/
-  OracleBridgeMain.java   -- Entry point, CLI routing
-  OracleCollector.java    -- All JDBC queries (V$SYSMETRIC, V$SESSION, V$SQL, V$EVENTMETRIC, etc.)
-  MetricsBuffer.java      -- Ring buffer (capacity=60) for sparkline history
-  OracleMonitorTui.java   -- Lanterna Screen-based TUI rendering
+  OracleBridgeMain.java      -- 진입점, CLI 라우팅, JSON 직렬화
+  OracleCollector.java       -- Oracle V$ 뷰 JDBC 쿼리 (7개 쿼리 메서드)
+  OracleMonitorTui.java      -- Lanterna Screen 기반 TUI 대시보드 렌더링
+  MetricsBuffer.java         -- Ring Buffer (capacity=60) + Unicode Sparkline
+  WaitEventDeltaTracker.java -- V$SYSTEM_EVENT 델타 연산 (실시간 Wait)
 ```
 
-## TUI features
+## TUI 기능
 
-- **Load Profile**: Active Sessions, DB Time/s, CPU/s, SQL Exec/s, Logical/Physical Reads/s, Redo MB/s with sparkline history
-- **Top Waits (Real-time)**: V$EVENTMETRIC based, Avg(ms) + Wait Time(ms)
-- **Sessions**: Non-idle sessions sorted by wait time, with SQL text, excludes monitoring session
-- **Top SQL (10 min)**: Recent SQL by CPU time, excludes V$/X$ monitoring queries
-- **Configurable interval**: `--interval N` (default 6 seconds)
-- **DB server time**: Title bar shows DB SYSDATE collection timestamp
+- **Load Profile**: AAS, DB Time/s, CPU/s, SQL Exec/s, Logical/Physical R/W/s, Redo MB/s 등 13개 메트릭 + 스파크라인 이력
+- **Top Waits (Real-time)**: V$SYSTEM_EVENT 델타 기반, 수집 주기(6초)에 맞는 실시간 반영
+- **Sessions**: 비유휴 활성 세션, wait time 기준 정렬, blocker SID 표시, SQL text 포함
+- **Top SQL (10 min)**: CPU time 기준 상위 SQL, sql_id + plan_hash_value, V$/X$ 쿼리 제외
+- **자기 세션 필터링**: 모니터링 도구 자체 세션이 대시보드에 표시되지 않음
+- **수집 주기 설정**: `--interval N` (기본 6초)
+- **DB 서버 시각**: 타이틀바에 DB SYSDATE 수집 시각 표시
 
-## Build
+## 빌드
 
 ```bash
 mvn clean package -f java/oracle-bridge/pom.xml
 ```
 
-Output: `java/oracle-bridge/target/dit-dbms-bridge.jar` (fat JAR with Oracle JDBC + Lanterna bundled)
+출력: `java/oracle-bridge/target/dit-dbms-bridge.jar` (fat JAR, Oracle JDBC + Lanterna 포함, ~7.5 MB)
+
+## 기술 스택
+
+| 항목 | 기술 | 버전 |
+|------|------|------|
+| 언어 | Java | 8+ |
+| 빌드 | Maven + maven-shade-plugin | 3.x |
+| TUI | Lanterna (Screen layer) | 3.1.3 |
+| DB 드라이버 | Oracle JDBC (ojdbc8) | 23.3.0.23.09 |
+| 패키지 | `io.dit.oracle` | 0.1.0 |
