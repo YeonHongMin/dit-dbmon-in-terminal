@@ -24,25 +24,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class TiberoMonitorTui {
 
-    private static final char BOX_H  = '\u2500';
-    private static final char BOX_V  = '\u2502';
+    private static final char BOX_H = '\u2500';
+    private static final char BOX_V = '\u2502';
     private static final char BOX_TL = '\u250C';
     private static final char BOX_TR = '\u2510';
     private static final char BOX_BL = '\u2514';
     private static final char BOX_BR = '\u2518';
 
-    private static final TextColor BG         = TextColor.ANSI.BLACK;
-    private static final TextColor FG         = TextColor.ANSI.WHITE;
-    private static final TextColor TITLE_BG   = new TextColor.RGB(30, 80, 160);
-    private static final TextColor TITLE_FG   = TextColor.ANSI.WHITE;
-    private static final TextColor HEADER_FG  = new TextColor.RGB(100, 200, 255);
-    private static final TextColor BORDER_FG  = new TextColor.RGB(60, 60, 80);
-    private static final TextColor VALUE_FG   = new TextColor.RGB(0, 255, 128);
-    private static final TextColor SPARK_FG   = new TextColor.RGB(0, 180, 255);
-    private static final TextColor ACTIVE_FG  = new TextColor.RGB(0, 255, 0);
-    private static final TextColor INACTIVE_FG= new TextColor.RGB(128, 128, 128);
-    private static final TextColor SELECT_BG  = new TextColor.RGB(40, 40, 80);
-    private static final TextColor FOOTER_BG  = new TextColor.RGB(20, 20, 40);
+    // ── Colors (Light Theme) ──
+    private static final TextColor BG = TextColor.ANSI.WHITE;
+    private static final TextColor FG = TextColor.ANSI.BLACK;
+    private static final TextColor TITLE_BG = new TextColor.RGB(30, 80, 160);
+    private static final TextColor TITLE_FG = TextColor.ANSI.WHITE;
+    private static final TextColor HEADER_FG = new TextColor.RGB(0, 100, 200);
+    private static final TextColor BORDER_FG = new TextColor.RGB(150, 150, 150);
+    private static final TextColor VALUE_FG = new TextColor.RGB(0, 128, 0);
+    private static final TextColor SPARK_FG = new TextColor.RGB(0, 100, 255);
+    private static final TextColor ACTIVE_FG = new TextColor.RGB(0, 128, 0);
+    private static final TextColor INACTIVE_FG = new TextColor.RGB(128, 128, 128);
+    private static final TextColor SELECT_BG = new TextColor.RGB(220, 230, 255);
+    private static final TextColor FOOTER_BG = new TextColor.RGB(230, 230, 230);
 
     private final Map<String, String> options;
     private final DbmsConnectionFactory connectionFactory;
@@ -111,7 +112,10 @@ public final class TiberoMonitorTui {
                     } catch (SQLException e) {
                         lastError = e.getMessage();
                         if (conn != null) {
-                            try { conn.close(); } catch (Exception ignored) {}
+                            try {
+                                conn.close();
+                            } catch (Exception ignored) {
+                            }
                         }
                         conn = null;
                         try {
@@ -137,7 +141,9 @@ public final class TiberoMonitorTui {
                     needsRender = false;
                 }
 
-                try { Thread.sleep(100); } catch (InterruptedException e) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     break;
                 }
@@ -146,7 +152,10 @@ public final class TiberoMonitorTui {
             System.err.println("Connection failed: " + e.getMessage());
         } finally {
             if (conn != null) {
-                try { conn.close(); } catch (Exception ignored) {}
+                try {
+                    conn.close();
+                } catch (Exception ignored) {
+                }
             }
             screen.stopScreen();
         }
@@ -172,9 +181,8 @@ public final class TiberoMonitorTui {
         Map<String, Object> sysstat = (Map<String, Object>) data.get("sysstat");
 
         Map<String, Object> metrics = TiberoCollector.mapMetricsStatic(
-            sysmetric != null ? sysmetric : new LinkedHashMap<String, Object>(),
-            sysstat != null ? sysstat : new LinkedHashMap<String, Object>()
-        );
+                sysmetric != null ? sysmetric : new LinkedHashMap<String, Object>(),
+                sysstat != null ? sysstat : new LinkedHashMap<String, Object>());
 
         synchronized (dataLock) {
             currentData = data;
@@ -192,9 +200,14 @@ public final class TiberoMonitorTui {
     private void render(Screen screen, TerminalSize size) {
         int w = size.getColumns();
         int h = size.getRows();
-        if (w < 40 || h < 10) return;
-
-        screen.clear();
+        if (w < 40 || h < 10)
+            return;
+        // Fill background
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                setChar(screen, y, x, ' ', FG, BG);
+            }
+        }
 
         Map<String, Object> data;
         Map<String, Object> metrics;
@@ -215,7 +228,7 @@ public final class TiberoMonitorTui {
         String hostName = inst != null ? str(inst.get("host_name")) : "";
         String version = inst != null ? str(inst.get("version")) : "";
         String title = String.format(" DIT | %s@%s | Tibero %s | Collected: %s ",
-            instanceName, hostName, version, lastCollectTime);
+                instanceName, hostName, version, lastCollectTime);
         drawBar(screen, row, w, title, TITLE_FG, TITLE_BG);
         row++;
 
@@ -230,18 +243,18 @@ public final class TiberoMonitorTui {
         int sparkW = 40;
         double dbTimePerSec = dbl(metrics.get("db_time_per_sec"));
         drawMetricRow(screen, pr++, 2, sparkW, "Active Sessions", "active_sessions", metrics, "%,.2f");
-        drawMetricRow(screen, pr++, 2, sparkW, "DB Time/s",       "db_time_per_sec", metrics, "%,.2f");
-        drawMetricRowPct(screen, pr++, 2, sparkW, "CPU Time/s",   "cpu_time_per_sec", metrics, "%,.2f", dbTimePerSec);
-        drawMetricRowPct(screen, pr++, 2, sparkW, "Wait Time/s",  "wait_time_per_sec", metrics, "%,.2f", dbTimePerSec);
+        drawMetricRow(screen, pr++, 2, sparkW, "DB Time/s", "db_time_per_sec", metrics, "%,.2f");
+        drawMetricRowPct(screen, pr++, 2, sparkW, "CPU Time/s", "cpu_time_per_sec", metrics, "%,.2f", dbTimePerSec);
+        drawMetricRowPct(screen, pr++, 2, sparkW, "Wait Time/s", "wait_time_per_sec", metrics, "%,.2f", dbTimePerSec);
         drawMetricRow(screen, pr++, 2, sparkW, "Logical Reads/s", "logical_reads_per_sec", metrics, "%,.0f");
-        drawMetricRow(screen, pr++, 2, sparkW, "Tran/s",          "tran_per_sec", metrics, "%,.0f");
-        drawMetricRow(screen, pr++, 2, sparkW, "SQL Exec/s",      "sql_exec_per_sec", metrics, "%,.0f");
-        drawMetricRow(screen, pr++, 2, sparkW, "Parse Total/s",   "parse_total_per_sec", metrics, "%,.0f");
-        drawMetricRow(screen, pr++, 2, sparkW, "Hard Parse/s",    "hard_parses_per_sec", metrics, "%,.0f");
-        drawMetricRow(screen, pr++, 2, sparkW, "Phy Reads/s",     "physical_reads_per_sec", metrics, "%,.0f");
-        drawMetricRow(screen, pr++, 2, sparkW, "Phy Read MB/s",   "physical_read_mb_per_sec", metrics, "%,.2f");
-        drawMetricRow(screen, pr++, 2, sparkW, "Phy Write MB/s",  "physical_write_mb_per_sec", metrics, "%,.2f");
-        drawMetricRow(screen, pr++, 2, sparkW, "Redo MB/s",       "redo_mb_per_sec", metrics, "%,.2f");
+        drawMetricRow(screen, pr++, 2, sparkW, "Tran/s", "tran_per_sec", metrics, "%,.0f");
+        drawMetricRow(screen, pr++, 2, sparkW, "SQL Exec/s", "sql_exec_per_sec", metrics, "%,.0f");
+        drawMetricRow(screen, pr++, 2, sparkW, "Parse Total/s", "parse_total_per_sec", metrics, "%,.0f");
+        drawMetricRow(screen, pr++, 2, sparkW, "Hard Parse/s", "hard_parses_per_sec", metrics, "%,.0f");
+        drawMetricRow(screen, pr++, 2, sparkW, "Phy Reads/s", "physical_reads_per_sec", metrics, "%,.0f");
+        drawMetricRow(screen, pr++, 2, sparkW, "Phy Read MB/s", "physical_read_mb_per_sec", metrics, "%,.2f");
+        drawMetricRow(screen, pr++, 2, sparkW, "Phy Write MB/s", "physical_write_mb_per_sec", metrics, "%,.2f");
+        drawMetricRow(screen, pr++, 2, sparkW, "Redo MB/s", "redo_mb_per_sec", metrics, "%,.2f");
 
         // Top Waits content
         pr = row + 1;
@@ -251,7 +264,7 @@ public final class TiberoMonitorTui {
         if (eventMetric != null && !eventMetric.isEmpty()) {
             int evNameW = Math.max(20, waitAreaW - 22);
             drawText(screen, pr, waitColStart,
-                padRight("Wait Event", evNameW) + padRight("Avg(ms)", 11) + "Wait Time(s)", HEADER_FG, BG);
+                    padRight("Wait Event", evNameW) + padRight("Avg(ms)", 11) + "Wait Time(s)", HEADER_FG, BG);
             pr++;
             for (int i = 0; i < Math.min(12, eventMetric.size()); i++) {
                 Map<String, Object> ev = eventMetric.get(i);
@@ -261,15 +274,15 @@ public final class TiberoMonitorTui {
                 TextColor evColor = waitClassColor(str(ev.get("wait_class")));
                 String avgStr = avgMs >= 1000 ? fmt("%,.1f", avgMs) : fmt("%.2f", avgMs);
                 drawText(screen, pr + i, waitColStart,
-                    padRight(evName, evNameW) + padRight(avgStr, 11) + fmt("%,.2f", waitSecPerSec),
-                    evColor, BG);
+                        padRight(evName, evNameW) + padRight(avgStr, 11) + fmt("%,.2f", waitSecPerSec),
+                        evColor, BG);
             }
         } else {
             List<Map<String, Object>> waits = (List<Map<String, Object>>) data.get("waits");
             if (waits != null) {
                 int evNameW = Math.max(20, waitAreaW - 22);
                 drawText(screen, pr, waitColStart,
-                    padRight("Wait Event", evNameW) + padRight("Avg(ms)", 11) + "Wait Time(s)", HEADER_FG, BG);
+                        padRight("Wait Event", evNameW) + padRight("Avg(ms)", 11) + "Wait Time(s)", HEADER_FG, BG);
                 pr++;
                 for (int i = 0; i < Math.min(12, waits.size()); i++) {
                     Map<String, Object> ev = waits.get(i);
@@ -279,8 +292,8 @@ public final class TiberoMonitorTui {
                     TextColor evColor = waitClassColor(str(ev.get("wait_class")));
                     String avgStr = avgMs >= 1000 ? fmt("%,.1f", avgMs) : fmt("%.2f", avgMs);
                     drawText(screen, pr + i, waitColStart,
-                        padRight(evName, evNameW) + padRight(avgStr, 11) + fmt("%,.2f", waitTimeSec),
-                        evColor, BG);
+                            padRight(evName, evNameW) + padRight(avgStr, 11) + fmt("%,.2f", waitTimeSec),
+                            evColor, BG);
                 }
             }
         }
@@ -289,22 +302,26 @@ public final class TiberoMonitorTui {
         // ── Sessions Panel ──
         List<Map<String, Object>> sessions = (List<Map<String, Object>>) data.get("sessions");
         int sessRows = Math.max(6, h - row - 16);
-        drawBox(screen, row, 0, w, sessRows + 2, "Sessions (" + (sessions != null ? sessions.size() : 0) + ")", BORDER_FG);
+        drawBox(screen, row, 0, w, sessRows + 2, "Sessions (" + (sessions != null ? sessions.size() : 0) + ")",
+                BORDER_FG);
 
         int sr = row + 1;
         int progW = 16;
         String sessHeader = padRight("SID", 7) + padRight("Serial", 8) + padRight("User", 12) +
-            padRight("Status", 10) + padRight("Wait Event", 28) + padRight("WClass", 12) +
-            padRight("Blk", 5) + padRight("SQL ID", 15) + padRight("Wait(s)", 8) +
-            padRight("Program", progW) + "SQL Text";
+                padRight("Status", 10) + padRight("Wait Event", 28) + padRight("WClass", 12) +
+                padRight("Blk", 5) + padRight("SQL ID", 15) + padRight("Wait(s)", 8) +
+                padRight("Program", progW) + "SQL Text";
         drawText(screen, sr, 2, truncate(sessHeader, w - 4), HEADER_FG, BG);
         sr++;
 
         if (sessions != null) {
             int maxVisible = sessRows - 1;
-            if (sessionSelect >= sessions.size()) sessionSelect = Math.max(0, sessions.size() - 1);
-            if (sessionScroll > sessionSelect) sessionScroll = sessionSelect;
-            if (sessionSelect >= sessionScroll + maxVisible) sessionScroll = sessionSelect - maxVisible + 1;
+            if (sessionSelect >= sessions.size())
+                sessionSelect = Math.max(0, sessions.size() - 1);
+            if (sessionScroll > sessionSelect)
+                sessionScroll = sessionSelect;
+            if (sessionSelect >= sessionScroll + maxVisible)
+                sessionScroll = sessionSelect - maxVisible + 1;
 
             for (int i = 0; i < maxVisible && (sessionScroll + i) < sessions.size(); i++) {
                 int idx = sessionScroll + i;
@@ -316,15 +333,15 @@ public final class TiberoMonitorTui {
                 String progStr = truncate(str(s.get("program")), progW - 1);
                 String sqlText = str(s.get("sql_text"));
                 String line = padRight(str(s.get("sid")), 7) +
-                    padRight(str(s.get("serial")), 8) +
-                    padRight(truncate(str(s.get("username")), 11), 12) +
-                    padRight(str(s.get("status")), 10) +
-                    padRight(truncate(str(s.get("event")), 27), 28) +
-                    padRight(truncate(str(s.get("wait_class")), 11), 12) +
-                    padRight(str(s.get("blocking_sid")), 5) +
-                    padRight(str(s.get("sql_id")), 15) +
-                    padRight(fmt("%.0f", dbl(s.get("seconds_in_wait"))), 8) +
-                    padRight(progStr, progW) + sqlText;
+                        padRight(str(s.get("serial")), 8) +
+                        padRight(truncate(str(s.get("username")), 11), 12) +
+                        padRight(str(s.get("status")), 10) +
+                        padRight(truncate(str(s.get("event")), 27), 28) +
+                        padRight(truncate(str(s.get("wait_class")), 11), 12) +
+                        padRight(str(s.get("blocking_sid")), 5) +
+                        padRight(str(s.get("sql_id")), 15) +
+                        padRight(fmt("%.0f", dbl(s.get("seconds_in_wait"))), 8) +
+                        padRight(progStr, progW) + sqlText;
 
                 drawText(screen, sr + i, 2, truncate(line, w - 4), statusColor, rowBg);
             }
@@ -338,8 +355,9 @@ public final class TiberoMonitorTui {
 
         int sqlR = row + 1;
         String sqlHeader = padRight("SQL ID", 15) + padRight("Plan Hash", 13) +
-            padRight("Elapsed(ms)", 14) + padRight("CPU(ms)", 14) +
-            padRight("Execs", 10) + padRight("Gets", 12) + "SQL Text";
+                padRight("Elapsed(s)", 13) + padRight("Ela(s)/Exec", 13) +
+                padRight("CPU(s)", 11) + padRight("Execs", 10) + padRight("Gets", 11) +
+                padRight("Gets/Exec", 11) + "SQL Text";
         drawText(screen, sqlR, 2, truncate(sqlHeader, w - 4), HEADER_FG, BG);
         sqlR++;
 
@@ -347,13 +365,21 @@ public final class TiberoMonitorTui {
             int maxSqlVisible = sqlPanelH - 2;
             for (int i = 0; i < maxSqlVisible && (sqlScroll + i) < sqlList.size(); i++) {
                 Map<String, Object> sq = sqlList.get(sqlScroll + i);
+                double elapsedSec = dbl(sq.get("elapsed_time")) / 1000000.0;
+                double cpuSec = dbl(sq.get("cpu_time")) / 1000000.0;
+                double execs = dbl(sq.get("executions"));
+                double bufferGets = dbl(sq.get("buffer_gets"));
+                double elaPerExec = execs > 0 ? elapsedSec / execs : 0;
+                double getsPerExec = execs > 0 ? bufferGets / execs : 0;
                 String sqlLine = padRight(str(sq.get("sql_id")), 15) +
-                    padRight(str(sq.get("plan_hash_value")), 13) +
-                    padRight(fmtLong(dbl(sq.get("elapsed_time")) / 1000.0), 14) +
-                    padRight(fmtLong(dbl(sq.get("cpu_time")) / 1000.0), 14) +
-                    padRight(fmtLong(dbl(sq.get("executions"))), 10) +
-                    padRight(fmtLong(dbl(sq.get("buffer_gets"))), 12) +
-                    str(sq.get("sql_text"));
+                        padRight(str(sq.get("plan_hash_value")), 13) +
+                        padRight(fmtLong(elapsedSec), 13) +
+                        padRight(String.format("%.3f", elaPerExec), 13) +
+                        padRight(fmtLong(cpuSec), 11) +
+                        padRight(fmtLong(execs), 10) +
+                        padRight(fmtLong(bufferGets), 11) +
+                        padRight(fmtLong(getsPerExec), 11) +
+                        str(sq.get("sql_text"));
                 drawText(screen, sqlR + i, 2, truncate(sqlLine, w - 4), FG, BG);
             }
         }
@@ -362,8 +388,9 @@ public final class TiberoMonitorTui {
         // ── Footer ──
         if (row < h) {
             String errStr = lastError.isEmpty() ? "" : " | ERR: " + truncate(lastError, 40);
-            String footer = String.format(" Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: %ds  Collect: %dms%s",
-                intervalMs / 1000, collectMs, errStr);
+            String footer = String.format(
+                    " Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: %ds  Collect: %dms%s",
+                    intervalMs / 1000, collectMs, errStr);
             drawBar(screen, h - 1, w, truncate(footer, w), FG, FOOTER_BG);
         }
     }
@@ -371,7 +398,7 @@ public final class TiberoMonitorTui {
     // ── Draw helpers ──
 
     private void drawMetricRow(Screen screen, int row, int col, int sparkW,
-                               String label, String key, Map<String, Object> metrics, String valFmt) {
+            String label, String key, Map<String, Object> metrics, String valFmt) {
         double val = dbl(metrics.get(key));
         String valStr = String.format(Locale.US, valFmt, val);
         String spark = metricsBuffer.sparkline(key, sparkW);
@@ -384,8 +411,8 @@ public final class TiberoMonitorTui {
     }
 
     private void drawMetricRowPct(Screen screen, int row, int col, int sparkW,
-                                  String label, String key, Map<String, Object> metrics,
-                                  String valFmt, double baseValue) {
+            String label, String key, Map<String, Object> metrics,
+            String valFmt, double baseValue) {
         double val = dbl(metrics.get(key));
         String pct = baseValue > 0.001 ? fmt("%.0f%%", val / baseValue * 100) : "-";
         String valStr = String.format(Locale.US, valFmt, val) + " (" + pct + ")";
@@ -452,7 +479,8 @@ public final class TiberoMonitorTui {
         } else if (key.getKeyType() == KeyType.Escape) {
             running.set(false);
         } else if (key.getKeyType() == KeyType.ArrowUp) {
-            if (sessionSelect > 0) sessionSelect--;
+            if (sessionSelect > 0)
+                sessionSelect--;
         } else if (key.getKeyType() == KeyType.ArrowDown) {
             sessionSelect++;
         } else if (key.getKeyType() == KeyType.PageUp) {
@@ -472,18 +500,29 @@ public final class TiberoMonitorTui {
     // ── Formatting helpers ──
 
     private static TextColor waitClassColor(String waitClass) {
-        if (waitClass == null) return FG;
+        if (waitClass == null)
+            return FG;
         switch (waitClass) {
-            case "User I/O":     return new TextColor.RGB(0, 128, 255);
-            case "System I/O":   return new TextColor.RGB(100, 149, 237);
-            case "Concurrency":  return new TextColor.RGB(255, 100, 100);
-            case "Application":  return new TextColor.RGB(255, 50, 50);
-            case "Commit":       return new TextColor.RGB(255, 165, 0);
-            case "Configuration":return new TextColor.RGB(200, 100, 200);
-            case "Administrative":return new TextColor.RGB(200, 100, 200);
-            case "Network":      return new TextColor.RGB(180, 180, 0);
-            case "CPU":          return new TextColor.RGB(0, 200, 0);
-            default:             return FG;
+            case "User I/O":
+                return new TextColor.RGB(0, 50, 200);
+            case "System I/O":
+                return new TextColor.RGB(50, 100, 200);
+            case "Concurrency":
+                return new TextColor.RGB(200, 50, 50);
+            case "Application":
+                return new TextColor.RGB(180, 0, 0);
+            case "Commit":
+                return new TextColor.RGB(200, 100, 0);
+            case "Configuration":
+                return new TextColor.RGB(150, 50, 150);
+            case "Administrative":
+                return new TextColor.RGB(150, 50, 150);
+            case "Network":
+                return new TextColor.RGB(120, 120, 0);
+            case "CPU":
+                return new TextColor.RGB(0, 150, 0);
+            default:
+                return FG;
         }
     }
 
@@ -492,9 +531,15 @@ public final class TiberoMonitorTui {
     }
 
     private static double dbl(Object v) {
-        if (v instanceof Number) return ((Number) v).doubleValue();
-        if (v == null) return 0.0;
-        try { return Double.parseDouble(String.valueOf(v)); } catch (Exception e) { return 0.0; }
+        if (v instanceof Number)
+            return ((Number) v).doubleValue();
+        if (v == null)
+            return 0.0;
+        try {
+            return Double.parseDouble(String.valueOf(v));
+        } catch (Exception e) {
+            return 0.0;
+        }
     }
 
     private static String fmt(String format, double value) {
@@ -506,21 +551,30 @@ public final class TiberoMonitorTui {
     }
 
     private static String padRight(String s, int width) {
-        if (s == null) s = "";
-        if (s.length() >= width) return s.substring(0, width);
+        if (s == null)
+            s = "";
+        if (s.length() >= width)
+            return s.substring(0, width);
         StringBuilder sb = new StringBuilder(width);
         sb.append(s);
-        for (int i = s.length(); i < width; i++) sb.append(' ');
+        for (int i = s.length(); i < width; i++)
+            sb.append(' ');
         return sb.toString();
     }
 
     private static String truncate(String s, int maxLen) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.length() <= maxLen ? s : s.substring(0, maxLen);
     }
 
     private static int intVal(String v, int fallback) {
-        if (v == null || v.trim().isEmpty()) return fallback;
-        try { return Integer.parseInt(v.trim()); } catch (Exception e) { return fallback; }
+        if (v == null || v.trim().isEmpty())
+            return fallback;
+        try {
+            return Integer.parseInt(v.trim());
+        } catch (Exception e) {
+            return fallback;
+        }
     }
 }
