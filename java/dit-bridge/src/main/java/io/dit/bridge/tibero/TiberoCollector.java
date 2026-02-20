@@ -18,6 +18,10 @@ public final class TiberoCollector implements DbmsCollector {
     private Map<String, Double> prevTimeModel;
     private long prevTimestampMs;
 
+    // ── V$OSSTAT2 delta tracker for Host CPU % ──
+    private double prevBusyTime = -1;
+    private double prevIdleTime = -1;
+
     public TiberoCollector() {
     }
 
@@ -168,6 +172,52 @@ public final class TiberoCollector implements DbmsCollector {
         return synthetic;
     }
 
+    // ── V$OSSTAT2 for Host CPU utilization (Tibero 6 FS06+) ──
+
+    public static Map<String, Double> queryOsstat2(Connection conn) throws SQLException {
+        String sql = "SELECT stat_name, value FROM v$osstat2 WHERE stat_name IN ('BUSY_TIME', 'IDLE_TIME')";
+        Map<String, Double> out = new LinkedHashMap<String, Double>();
+        Statement stmt = conn.createStatement();
+        try {
+            ResultSet rs = stmt.executeQuery(sql);
+            try {
+                while (rs.next()) {
+                    String name = rs.getString(1);
+                    double value = rs.getDouble(2);
+                    if (!rs.wasNull() && name != null) {
+                        out.put(name, value);
+                    }
+                }
+            } finally {
+                rs.close();
+            }
+        } finally {
+            stmt.close();
+        }
+        return out;
+    }
+
+    public double computeHostCpuUtil(Map<String, Double> osstat) {
+        Double busy = osstat.get("BUSY_TIME");
+        Double idle = osstat.get("IDLE_TIME");
+        if (busy == null || idle == null) return -1;
+
+        if (prevBusyTime < 0) {
+            prevBusyTime = busy;
+            prevIdleTime = idle;
+            return 0.0;
+        }
+
+        double dBusy = busy - prevBusyTime;
+        double dIdle = idle - prevIdleTime;
+        prevBusyTime = busy;
+        prevIdleTime = idle;
+
+        double total = dBusy + dIdle;
+        if (total <= 0) return 0.0;
+        return dBusy / total * 100.0;
+    }
+
     // ── Cumulative sysstat for CLI "metrics" command ──
 
     public static Map<String, Object> querySysstat(Connection conn) throws SQLException {
@@ -191,7 +241,7 @@ public final class TiberoCollector implements DbmsCollector {
             "  WHERE class <> 'STAT_CLASS_IDLE' " +
             "  AND total_waits > 0 " +
             "  ORDER BY time_waited DESC" +
-            ") WHERE ROWNUM <= 12";
+            ") WHERE ROWNUM <= 13";
 
         List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
         Statement stmt = conn.createStatement();
@@ -243,6 +293,7 @@ public final class TiberoCollector implements DbmsCollector {
             "          AND ROWNUM = 1) AS sql_text " +
             "  FROM v$session s " +
             "  WHERE s.type = 'WTHR' " +
+            "  AND s.status <> 'READY' " +
             "  AND s.username IS NOT NULL " +
             "  AND s.sid <> " + mySid + " " +
             "  ORDER BY s.sql_et DESC, s.wait_time DESC" +
@@ -400,11 +451,25 @@ public final class TiberoCollector implements DbmsCollector {
             data.put("instance", new LinkedHashMap<String, Object>());
         }
 
+        Map<String, Object> sysmetric;
         try {
-            data.put("sysmetric", computeSyntheticSysmetric(conn));
+            sysmetric = computeSyntheticSysmetric(conn);
         } catch (SQLException e) {
-            data.put("sysmetric", new LinkedHashMap<String, Object>());
+            sysmetric = new LinkedHashMap<String, Object>();
         }
+
+        // Host CPU % from V$OSSTAT2 (Tibero 6 FS06+, graceful if view not available)
+        try {
+            Map<String, Double> osstat = queryOsstat2(conn);
+            double cpuUtil = computeHostCpuUtil(osstat);
+            if (cpuUtil >= 0) {
+                sysmetric.put("Host CPU Utilization (%)", cpuUtil);
+            }
+        } catch (SQLException e) {
+            // V$OSSTAT2 not available in this Tibero version
+        }
+
+        data.put("sysmetric", sysmetric);
 
         try {
             data.put("sysstat", querySysstat(conn));
@@ -441,6 +506,7 @@ public final class TiberoCollector implements DbmsCollector {
 
     public static Map<String, Object> mapMetricsStatic(Map<String, Object> sysmetric, Map<String, Object> sysstat) {
         Map<String, Object> out = new LinkedHashMap<String, Object>();
+        out.put("host_cpu_util", dbl(sysmetric, "Host CPU Utilization (%)"));
         out.put("active_sessions", dbl(sysmetric, "Average Active Sessions"));
         out.put("sql_exec_per_sec", dbl(sysmetric, "Executions Per Sec"));
         out.put("logical_reads_per_sec", dbl(sysmetric, "Logical Reads Per Sec"));
@@ -461,9 +527,6 @@ public final class TiberoCollector implements DbmsCollector {
         out.put("parse_total_per_sec", dbl(sysmetric, "Total Parse Count Per Sec"));
         out.put("hard_parses_per_sec", dbl(sysmetric, "Hard Parse Count Per Sec"));
         out.put("buffer_cache_hit", dbl(sysmetric, "Buffer Cache Hit Ratio"));
-        out.put("execute_count", dbl(sysstat, "execute count"));
-        out.put("session_logical_reads", dbl(sysstat, "logical reads"));
-        out.put("redo_size", dbl(sysstat, "redo log size"));
         return out;
     }
 

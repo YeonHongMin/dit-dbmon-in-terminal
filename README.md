@@ -7,27 +7,27 @@ SSH 터미널 환경에서 Oracle / Tibero DB를 실시간 모니터링하는 Ja
 | DBMS | 상태 | 비고 |
 |------|------|------|
 | Oracle | ✅ | 19c 이상 검증 |
-| Tibero | ✅ | Tibero 7 검증 |
+| Tibero | ✅ | Tibero 6/7 검증 |
 
 ## 빠른 시작
 
 > **💡 Windows 환경 실행 주의사항**
 > Windows에서 TUI 모드(`--command tui`)를 실행할 때는 터미널 I/O 충돌을 방지하기 위해 `java` 대신 **`javaw`** 명령어를 사용해야 합니다.
-> 예시: `javaw -jar java/dit-bridge/target/dit-dbms-monitor.jar ...`
+> 예시: `javaw -jar java/dit-bridge/target/dit-dbms-monitor-0.1.2.jar ...`
 
 ```bash
 # 빌드
 mvn clean package -f java/dit-bridge/pom.xml
 
 # Oracle TUI (Windows는 javaw 사용)
-java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor-0.1.2.jar \
   --dbms-type oracle --command tui \
   --host <db-host> --port 1521 \
   --service-name <service> \
   --user <monitoring user> --password <user password>
 
 # Tibero TUI (Windows는 javaw 사용)
-java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
+java -jar java/dit-bridge/target/dit-dbms-monitor-0.1.2.jar \
   --dbms-type tibero --command tui \
   --host <db-host> --port 8629 \
   --service-name <dbname> \
@@ -66,9 +66,10 @@ GRANT ALTER SYSTEM TO <monitoring user>;                -- kill session 용 (선
 
 | V$ 뷰 | Oracle | Tibero | 용도 |
 |--------|--------|--------|------|
-| V$SYSMETRIC | O | - | Load Profile (실시간 rate) |
-| V$SYSSTAT | O | O | 누적 성능 카운터 |
+| V$SYSMETRIC | O | - | AAS, DB Time, CPU, Wait Time, Host CPU % |
+| V$SYSSTAT | O | O | Load Profile 델타 (Exec, Reads, Writes 등) |
 | V$SYS_TIME_MODEL | - | O | DB Time, DB CPU |
+| V$OSSTAT2 | - | O | Host CPU 사용률 (Tibero 6 FS06+) |
 | V$SESSION | O | O | 활성 세션 |
 | V$SQL | O | O | Top SQL |
 | V$SYSTEM_EVENT | O | O | Wait Event |
@@ -83,44 +84,33 @@ Lanterna Screen 기반 대시보드. Load Profile 스파크라인, 실시간 Wai
 ```text
 DIT | DEV@single19cfs | 19.0.0.0.0 | Collected: 18:19:13
 ┌─ Load Profile ────────────────────────────────────────────────────────────────┐┌─ Top Waits (Real-time) ───────────────────────────────────────────────────────┐
-│ Active Sessions   13.97           ▄▄▄▄▄▄▄▄▄▄▄▁▁   ▁▁▄▄▄▄▄▄▄▄▄▄▄▄▄▂▂   ▃▃██    ││ Wait Event                                             Avg(ms)    Wait Time(s)│
-│ DB Time/s         1,397.42        ▄▄▄▄▄▄▄▄▄▄▄▁▁   ▁▁▄▄▄▄▄▄▄▄▄▄▄▄▄▂▂   ▃▃██    ││ log file sync                                          11.43      11.87       │
-│ CPU Time/s        86.69 (6%)              ▆▆▆▆▆▆▆▆▆▆▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ log file parallel write                                6.82       1.63        │
-│ Wait Time/s       1,310.73 (94%)  ▄▄▄▄▄▄▄▄▃▃▃▁▁     ▃▃▃▄▄▄▄▄▄▄▃▃▃▁▁   ▂▂██    ││ LGWR any worker group                                  3.81       0.72        │
-│ Logical Reads/s   421,161         ▂▃▃▃▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││ LGWR all worker groups                                 6.08       0.21        │
-│ Tran/s            438                     ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ db file scattered read                                 1.77       0.10        │
-│ SQL Exec/s        28,670          ▂▃▃▃▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││ db file sequential read                                0.62       0.07        │
-│ Parse Total/s     886                     ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ LGWR worker group ordering                             1.50       0.06        │
-│ Hard Parse/s      0               ████████                                    ││ library cache: mutex X                                 4.83       0.01        │
-│ Phy Reads/s       636             █▄▄▄▃▃▂▂▂▂▂▁▁     ▁▁▁                       ││ control file parallel write                            8.87       0.01        │
-│ Phy Read MB/s     2.63            ▅▅▅▅▅▅▅▅██████████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁      ││ buffer busy waits                                      0.52       0.00        │
-│ Phy Write MB/s    2.63                    ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ SQL*Net message to client                              0.00       0.00        │
-│ Redo MB/s         5.74            ▂▂▂▂▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││ cursor: pin S                                          1.19       0.00        │
+│ Host CPU %        45.3                                                        ││ Wait Event                                             Avg(ms)    Wait Time(s)│
+│ Active Sessions   13.97           ▄▄▄▄▄▄▄▄▄▄▄▁▁   ▁▁▄▄▄▄▄▄▄▄▄▄▄▄▄▂▂   ▃▃██    ││ log file sync                                          11.43      11.87       │
+│ DB Time/s         1,397.42        ▄▄▄▄▄▄▄▄▄▄▄▁▁   ▁▁▄▄▄▄▄▄▄▄▄▄▄▄▄▂▂   ▃▃██    ││ log file parallel write                                6.82       1.63        │
+│ CPU Time/s        86.69 (6%)              ▆▆▆▆▆▆▆▆▆▆▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ LGWR any worker group                                  3.81       0.72        │
+│ Wait Time/s       1,310.73 (94%)  ▄▄▄▄▄▄▄▄▃▃▃▁▁     ▃▃▃▄▄▄▄▄▄▄▃▃▃▁▁   ▂▂██    ││ LGWR all worker groups                                 6.08       0.21        │
+│ Logical Reads/s   421,161         ▂▃▃▃▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││ db file scattered read                                 1.77       0.10        │
+│ Tran/s            438                     ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ db file sequential read                                0.62       0.07        │
+│ SQL Exec/s        28,670          ▂▃▃▃▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││ LGWR worker group ordering                             1.50       0.06        │
+│ Parse Total/s     886                     ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ library cache: mutex X                                 4.83       0.01        │
+│ Hard Parse/s      0               ████████                                    ││ control file parallel write                            8.87       0.01        │
+│ Phy Reads/s       636             █▄▄▄▃▃▂▂▂▂▂▁▁     ▁▁▁                       ││ buffer busy waits                                      0.52       0.00        │
+│ Phy Read MB/s     2.63            ▅▅▅▅▅▅▅▅██████████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁      ││ SQL*Net message to client                              0.00       0.00        │
+│ Phy Write MB/s    2.63                    ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ cursor: pin S                                          1.19       0.00        │
+│ Redo MB/s         5.74            ▂▂▂▂▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││                                                                              │
 └───────────────────────────────────────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────────────────┘
 ┌─ Sessions (16) ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 │ SID    Serial  User        Status    Wait Event                  WClass      Blk  SQL ID         Wait(s) Program         SQL Text                              │
 │ 16     34533   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
 │ 402    14785   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.updateCustomer │
 │ 20     35420   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
-│ 141    16042   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
-│ 142    61017   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.browseandupdat │
-│ 143    61174   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
-│ 145    55422   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
-│ 272    64022   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
 └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ┌─ Top SQL (10 min) ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ SQL ID         Plan Hash    Elapsed(ms)   CPU(ms)       Execs     Gets        SQL Text                                                                         │
-│ 0w2qpuc6u2zsp  0            282,236       121,863       82,252    44,589,839  BEGIN :1 := orderentry.neworder(:2 ,:3 ,:4 ); END;                               │
-│ f7rxuxzt64k87  0            89,645        14,309        248,668   3,926,949   INSERT INTO ORDER_ITEMS ( ORDER_ID, LINE_ITEM_ID, PRODUCT_ID, UNIT_PRICE, QUANTI │
-│ 147a57cxq3w5y  0            84,673        65,239        102,194   12,428,470  BEGIN :1 := orderentry.browseproducts(:2 ,:3 ,:4 ); END;                         │
-│ c13sma6rkr27c  1206466372   50,926        39,559        984,540   34,246,586  SELECT PRODUCTS.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, CATEGORY_ID, WEIG │
-│ apgb2g9q2zjh1  0            50,573        5,978         10,243    337,456     BEGIN :1 := orderentry.browseandupdateorders(:2 ,:3 ,:4 ); END;                  │
-│ 0y1prvxqc2ra9  3686042051   48,594        37,766        1,230,754 12,426,686  SELECT PRODUCTS.PRODUCT_ID, PRODUCT_NAME, PRODUCT_DESCRIPTION, CATEGORY_ID, WEIG │
-│ 01jzc2mg6cg92  0            47,948        13,394        30,749    1,478,655   BEGIN :1 := orderentry.newcustomer(:2 ,:3 ,:4 ,:5 ,:6 ,:7 ,:8 ,:9 ,:10 ); END;   │
-│ 3fw75k1snsddx  494735477    47,083        10,376        82,240    1,535,106   INSERT INTO ORDERS ( ORDER_ID, ORDER_DATE, ORDER_MODE, CUSTOMER_ID, ORDER_STATUS │
-│ azt6dq6t89u2w  0            26,609        19,496        93        1,605,313   BEGIN       DBMS_WORKLOAD_REPOSITORY.CREATE_SNAPSHOT('TYPICAL');         END;    │
-└─gh2g2tynpcpv1  0            23,162        3,620         30,262    597,342     INSERT INTO CUSTOMERS ( CUSTOMER_ID , CUST_FIRST_NAME , CUST_LAST_NAME , NLS_LAN─┘
-
+│ SQL ID         Plan Hash    Ela(s)/Exec  Elapsed(s)  CPU(s)    Execs     Gets      Gets/Exec  SQL Text                                                         │
+│ 0w2qpuc6u2zsp  0            0.003        282.2       121.9     82.3K     44.6M     542        BEGIN :1 := orderentry.neworder(:2 ,:3 ,:4 ); END;               │
+│ f7rxuxzt64k87  0            0.000        89.6        14.3      248.7K    3.9M      16         INSERT INTO ORDER_ITEMS ( ORDER_ID, LINE_ITEM_ID, ...            │
+│ 147a57cxq3w5y  0            0.001        84.7        65.2      102.2K    12.4M     122        BEGIN :1 := orderentry.browseproducts(:2 ,:3 ,:4 ); END;         │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: 6s  Collect: 156ms
 ```
 
@@ -141,32 +131,32 @@ Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: 6s  Collect: 156ms
 # 공통 인자: --dbms-type oracle|tibero --host --port --service-name --user --password
 
 # 접속 확인
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command health ...
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command health ...
 
 # 메트릭 스냅샷 (JSON)
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command metrics ...
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command metrics ...
 
 # 활성 세션 목록 (JSON)
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command sessions ...
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command sessions ...
 
 # 대기 이벤트 (JSON)
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command waits ...
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command waits ...
 
 # SQL 핫스팟 (JSON)
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command sql ...
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command sql ...
 
 # 연속 모니터링 + JSONL 녹화
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command monitor \
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command monitor \
   --interval-seconds 5 --record-file run.jsonl --capture-file screen.txt ...
 
 # TUI 대시보드 (Windows는 javaw 사용)
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command tui --interval 6 ...
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command tui --interval 6 ...
 
 # 세션 강제 종료
-java -jar dit-dbms-monitor.jar --dbms-type oracle --command kill --sid <sid,serial#> ...
+java -jar dit-dbms-monitor-0.1.2.jar --dbms-type oracle --command kill --sid <sid,serial#> ...
 
 # 녹화 파일 리포트 (Markdown)
-java -jar dit-dbms-monitor.jar --command report --record-file run.jsonl --output report.md
+java -jar dit-dbms-monitor-0.1.2.jar --command report --record-file run.jsonl --output report.md
 ```
 
 ## 아키텍처
@@ -186,13 +176,13 @@ java/dit-bridge/src/main/java/io/dit/bridge/
     JsonUtil.java              -- 경량 JSON 직렬화 (외부 라이브러리 없음)
 
   oracle/
-    OracleCollector.java       -- Oracle V$ 뷰 JDBC 쿼리
+    OracleCollector.java       -- Oracle V$ 뷰 JDBC 쿼리 (V$SYSMETRIC + V$SYSSTAT 델타)
     OracleConnectionFactory.java -- Oracle JDBC 접속
     OracleWaitDeltaTracker.java  -- V$SYSTEM_EVENT 델타 연산
     OracleMonitorTui.java      -- Lanterna TUI 대시보드
 
   tibero/
-    TiberoCollector.java       -- Tibero V$ 뷰 쿼리 + V$SYSSTAT 델타
+    TiberoCollector.java       -- Tibero V$ 뷰 쿼리 + V$SYSSTAT/V$OSSTAT 델타
     TiberoConnectionFactory.java -- Tibero JDBC 접속
     TiberoWaitDeltaTracker.java  -- V$SYSTEM_EVENT 델타 연산
     TiberoMonitorTui.java      -- Lanterna TUI 대시보드
@@ -204,7 +194,7 @@ java/dit-bridge/src/main/java/io/dit/bridge/
 mvn clean package -f java/dit-bridge/pom.xml
 ```
 
-출력: `java/dit-bridge/target/dit-dbms-monitor.jar` (fat JAR, Oracle JDBC + Tibero JDBC + Lanterna 포함)
+출력: `java/dit-bridge/target/dit-dbms-monitor-0.1.2.jar` (fat JAR, Oracle JDBC + Tibero JDBC + Lanterna 포함)
 
 ## 기술 스택
 
@@ -215,4 +205,25 @@ mvn clean package -f java/dit-bridge/pom.xml
 | TUI | Lanterna (Screen layer) | 3.1.3 |
 | Oracle 드라이버 | ojdbc8 | 23.3.0.23.09 |
 | Tibero 드라이버 | tibero7-jdbc | 7.0 |
-| 패키지 | `io.dit.bridge` | 0.1.1 |
+| 패키지 | `io.dit.bridge` | 0.1.2 |
+
+## 변경 이력
+
+### v0.1.2
+
+- **Load Profile V$SYSSTAT 델타 전환 (Oracle)**: DB Time/CPU/Wait/AAS만 V$SYSMETRIC에서 조회하고, 나머지 메트릭(Exec, Logical Reads, Phy Reads/Writes, Redo, Parse, Tran 등)은 V$SYSSTAT 델타 기반으로 전환
+- **Host CPU % 추가**: Load Profile 최상단에 Host CPU 사용률 표시 (Oracle: V$SYSMETRIC `Host CPU Utilization (%)`, Tibero: V$OSSTAT2 `BUSY_TIME`/`IDLE_TIME` 델타)
+- **TUI 배경색 변경**: `ANSI.WHITE` → `ANSI.WHITE_BRIGHT`로 변경하여 더 밝은 배경 적용
+- **Top Waits 13개**: Wait Event 표시 개수를 12개에서 13개로 증가
+- **Top SQL K/M 단위**: Elapsed(s), CPU(s), Execs, Gets, Gets/Exec 값에 K/M/G 축약 단위 적용
+- **Top SQL Ela(s)/Exec 컬럼 추가**: SQL당 평균 실행 시간 컬럼 추가
+- **JAR 파일명 버전 포함**: 빌드 출력 파일명이 `dit-dbms-monitor-0.1.2.jar` 형태로 변경
+- **Tibero V$OSSTAT → V$OSSTAT2**: Tibero에는 V$OSSTAT이 없어 V$OSSTAT2로 수정 (Tibero 6 FS06+)
+- **Tibero Sessions READY 제외**: STATUS='READY' 세션을 활성 세션 목록에서 필터링
+
+### v0.1.1
+
+- Windows `javaw` TUI 실행 지원 문서화
+- Light 테마 적용 (밝은 배경)
+- Gets/Exec 메트릭 추가
+- Top SQL 단위를 ms → s로 변경

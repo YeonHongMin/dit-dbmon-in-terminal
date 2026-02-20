@@ -32,7 +32,7 @@ public final class TiberoMonitorTui {
     private static final char BOX_BR = '\u2518';
 
     // ── Colors (Light Theme) ──
-    private static final TextColor BG = TextColor.ANSI.WHITE;
+    private static final TextColor BG = TextColor.ANSI.WHITE_BRIGHT;
     private static final TextColor FG = TextColor.ANSI.BLACK;
     private static final TextColor TITLE_BG = new TextColor.RGB(30, 80, 160);
     private static final TextColor TITLE_FG = TextColor.ANSI.WHITE;
@@ -236,12 +236,13 @@ public final class TiberoMonitorTui {
         int leftW = w / 2;
         int rightW = w - leftW;
 
-        drawBox(screen, row, 0, leftW, 15, "Load Profile", BORDER_FG);
-        drawBox(screen, row, leftW, rightW, 15, "Top Waits (Real-time)", BORDER_FG);
+        drawBox(screen, row, 0, leftW, 16, "Load Profile", BORDER_FG);
+        drawBox(screen, row, leftW, rightW, 16, "Top Waits (Real-time)", BORDER_FG);
 
         int pr = row + 1;
         int sparkW = 40;
         double dbTimePerSec = dbl(metrics.get("db_time_per_sec"));
+        drawMetricRow(screen, pr++, 2, sparkW, "Host CPU %", "host_cpu_util", metrics, "%,.1f");
         drawMetricRow(screen, pr++, 2, sparkW, "Active Sessions", "active_sessions", metrics, "%,.2f");
         drawMetricRow(screen, pr++, 2, sparkW, "DB Time/s", "db_time_per_sec", metrics, "%,.2f");
         drawMetricRowPct(screen, pr++, 2, sparkW, "CPU Time/s", "cpu_time_per_sec", metrics, "%,.2f", dbTimePerSec);
@@ -266,7 +267,7 @@ public final class TiberoMonitorTui {
             drawText(screen, pr, waitColStart,
                     padRight("Wait Event", evNameW) + padRight("Avg(ms)", 11) + "Wait Time(s)", HEADER_FG, BG);
             pr++;
-            for (int i = 0; i < Math.min(12, eventMetric.size()); i++) {
+            for (int i = 0; i < Math.min(13, eventMetric.size()); i++) {
                 Map<String, Object> ev = eventMetric.get(i);
                 String evName = truncate(str(ev.get("event")), evNameW - 1);
                 double avgMs = dbl(ev.get("avg_wait_ms"));
@@ -284,7 +285,7 @@ public final class TiberoMonitorTui {
                 drawText(screen, pr, waitColStart,
                         padRight("Wait Event", evNameW) + padRight("Avg(ms)", 11) + "Wait Time(s)", HEADER_FG, BG);
                 pr++;
-                for (int i = 0; i < Math.min(12, waits.size()); i++) {
+                for (int i = 0; i < Math.min(13, waits.size()); i++) {
                     Map<String, Object> ev = waits.get(i);
                     String evName = truncate(str(ev.get("event")), evNameW - 1);
                     double avgMs = dbl(ev.get("avg_wait_ms"));
@@ -297,7 +298,7 @@ public final class TiberoMonitorTui {
                 }
             }
         }
-        row += 15;
+        row += 16;
 
         // ── Sessions Panel ──
         List<Map<String, Object>> sessions = (List<Map<String, Object>>) data.get("sessions");
@@ -373,12 +374,12 @@ public final class TiberoMonitorTui {
                 double getsPerExec = execs > 0 ? bufferGets / execs : 0;
                 String sqlLine = padRight(str(sq.get("sql_id")), 15) +
                         padRight(str(sq.get("plan_hash_value")), 13) +
-                        padRight(fmtLong(elapsedSec), 13) +
+                        padRight(fmtHuman(elapsedSec), 13) +
                         padRight(String.format("%.3f", elaPerExec), 13) +
-                        padRight(fmtLong(cpuSec), 11) +
-                        padRight(fmtLong(execs), 10) +
-                        padRight(fmtLong(bufferGets), 11) +
-                        padRight(fmtLong(getsPerExec), 11) +
+                        padRight(fmtHuman(cpuSec), 11) +
+                        padRight(fmtHuman(execs), 10) +
+                        padRight(fmtHuman(bufferGets), 11) +
+                        padRight(fmtHuman(getsPerExec), 11) +
                         str(sq.get("sql_text"));
                 drawText(screen, sqlR + i, 2, truncate(sqlLine, w - 4), FG, BG);
             }
@@ -548,6 +549,13 @@ public final class TiberoMonitorTui {
 
     private static String fmtLong(double value) {
         return fmt("%,.0f", value);
+    }
+
+    private static String fmtHuman(double value) {
+        if (value >= 1_000_000_000) return fmt("%.1fG", value / 1_000_000_000);
+        if (value >= 1_000_000) return fmt("%.1fM", value / 1_000_000);
+        if (value >= 1_000) return fmt("%.1fK", value / 1_000);
+        return fmt("%.0f", value);
     }
 
     private static String padRight(String s, int width) {

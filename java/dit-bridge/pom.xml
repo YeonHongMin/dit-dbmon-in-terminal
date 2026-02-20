@@ -5,7 +5,7 @@
 
   <groupId>io.dit</groupId>
   <artifactId>dit-dbms-monitor</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <packaging>jar</packaging>
 
   <name>dit-dbms-monitor</name>

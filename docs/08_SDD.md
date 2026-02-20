@@ -13,7 +13,7 @@ DIT (DBmon-In-Terminal)는 SSH 터미널 환경에서 Oracle / Tibero DB를 실�
 | TUI | Lanterna (Screen layer) | 3.1.3 |
 | Oracle 드라이버 | ojdbc8 | 23.3.0.23.09 |
 | Tibero 드라이버 | tibero7-jdbc | 7.0 |
-| 패키지 | `io.dit.bridge` | 0.1.1 |
+| 패키지 | `io.dit.bridge` | 0.1.2 |
 | 배포 형태 | Fat JAR (의존성 포함) | - |
 
 ### 설계 제약
@@ -159,8 +159,8 @@ Main Loop (100ms poll):
   │
   └─ render() (변경 시에만)
       ├─ Title Bar → 인스턴스@호스트 | 버전 | 수집시각
-      ├─ Load Profile (좌 50%) → 13개 메트릭 + Sparkline
-      ├─ Top Waits (우 50%) → WaitDelta 12개
+      ├─ Load Profile (좌 50%) → 14개 메트릭 + Sparkline (Host CPU % 포함)
+      ├─ Top Waits (우 50%) → WaitDelta 13개
       ├─ Sessions → 스크롤 가능한 세션 테이블
       ├─ Top SQL → elapsed_time 기준 SQL 목록
       └─ Footer → 키 안내, 수집 소요시간, 에러
@@ -171,7 +171,8 @@ Main Loop (100ms poll):
 
 | 항목 | Oracle | Tibero |
 |------|--------|--------|
-| Load Profile 소스 | V$SYSMETRIC (즉시 rate) | V$SYSSTAT delta (앱 시간 기반) |
+| Load Profile 소스 | V$SYSMETRIC (AAS/DB Time/CPU/Wait/Host CPU) + V$SYSSTAT delta (나머지) | V$SYSSTAT delta (앱 시간 기반) |
+| Host CPU % | V$SYSMETRIC `Host CPU Utilization (%)` | V$OSSTAT2 `BUSY_TIME`/`IDLE_TIME` delta |
 | DB Time / CPU | V$SYSMETRIC | V$SYS_TIME_MODEL delta |
 | Wait Event 컬럼 | EVENT, WAIT_CLASS | NAME, CLASS (STAT_CLASS_xxx) |
 | Sessions 필터 | `type='USER'`, SYS_CONTEXT | `type='WTHR'`, V$MYSTAT SID |
@@ -254,9 +255,24 @@ ssh user@server 'java -jar dit-dbms-monitor.jar --dbms-type oracle --command tui
 - `--dbms-type` CLI 인자로 런타임 구현체 선택
 - 새 DBMS 추가 시 인터페이스 구현 + DitMain 분기 추가만 필요
 
-### ADR-6: Tibero V$SYSSTAT 내부 델타
+### ADR-6: V$SYSSTAT 내부 델타 (Oracle + Tibero 공통)
 
-- Tibero에 V$SYSMETRIC이 없으므로 V$SYSSTAT + V$SYS_TIME_MODEL delta로 대체
-- TiberoCollector 내부에 prevSysstat/prevTimestamp 상태 보유
-- 서버 시간 신뢰 불가 → System.currentTimeMillis() 기반 delta 계산
+- Oracle: V$SYSMETRIC은 AAS, DB Time, CPU Time, Wait Time, Host CPU %만 사용. 나머지 메트릭(Exec, Logical Reads, Phy Reads/Writes, Redo, Parse, Tran)은 V$SYSSTAT delta로 전환
+- Tibero: V$SYSMETRIC이 없으므로 V$SYSSTAT + V$SYS_TIME_MODEL delta로 대체
+- 양쪽 Collector 내부에 prevSysstat/prevTimestamp 상태 보유
+- Oracle은 V$SYSMETRIC과 V$SYSSTAT delta를 `collectAll()`에서 merge
+- Tibero 서버 시간 신뢰 불가 → System.currentTimeMillis() 기반 delta 계산
 - 첫 번째 호출은 baseline (rate = 0)
+
+### ADR-7: Host CPU % (V$SYSMETRIC / V$OSSTAT2)
+
+- Oracle: V$SYSMETRIC `Host CPU Utilization (%)`로 직접 조회
+- Tibero: V$OSSTAT2 `BUSY_TIME`/`IDLE_TIME` delta로 계산 (`busy_delta / (busy_delta + idle_delta) * 100`)
+- Tibero에는 V$OSSTAT이 없고 V$OSSTAT2를 사용 (Tibero 6 FS06+)
+- V$OSSTAT2 미존재 시 graceful skip (try-catch)
+
+### ADR-8: Top SQL K/M/G 단위 포맷
+
+- Elapsed(s), CPU(s), Execs, Gets, Gets/Exec에 `fmtHuman()` 적용
+- 1,000 이상 K, 1,000,000 이상 M, 1,000,000,000 이상 G 단위 표시
+- 대량 부하 환경에서 숫자 가독성 개선

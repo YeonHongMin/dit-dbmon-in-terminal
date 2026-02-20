@@ -17,6 +17,10 @@ import java.util.Map;
  */
 public final class OracleCollector implements DbmsCollector {
 
+    // ── V$SYSSTAT delta tracker ──
+    private Map<String, Double> prevSysstat;
+    private long prevSysstatTimestampMs;
+
     public OracleCollector() {
     }
 
@@ -31,22 +35,11 @@ public final class OracleCollector implements DbmsCollector {
             "  FROM v$sysmetric" +
             ") x " +
             "WHERE rn = 1 AND metric_name IN (" +
+            "  'Host CPU Utilization (%)'," +
             "  'Average Active Sessions'," +
-            "  'Executions Per Sec'," +
-            "  'Logical Reads Per Sec'," +
-            "  'Physical Reads Per Sec'," +
-            "  'Physical Writes Per Sec'," +
-            "  'Redo Generated Per Sec'," +
             "  'Database Time Per Sec'," +
             "  'CPU Usage Per Sec'," +
-            "  'Database Wait Time Ratio'," +
-            "  'User Commits Per Sec'," +
-            "  'User Rollbacks Per Sec'," +
-            "  'Total Parse Count Per Sec'," +
-            "  'Hard Parse Count Per Sec'," +
-            "  'Buffer Cache Hit Ratio'," +
-            "  'Physical Read Total Bytes Per Sec'," +
-            "  'Physical Write Total Bytes Per Sec'" +
+            "  'Database Wait Time Ratio'" +
             ")";
 
         Map<String, Object> out = new LinkedHashMap<String, Object>();
@@ -75,8 +68,10 @@ public final class OracleCollector implements DbmsCollector {
     public static Map<String, Object> querySysstat(Connection conn) throws SQLException {
         String sql =
             "SELECT name, value FROM v$sysstat " +
-            "WHERE name IN ('execute count','session logical reads','redo size'," +
-            "'db block gets','consistent gets','physical reads','physical writes')";
+            "WHERE name IN ('execute count','session logical reads','physical reads','physical writes'," +
+            "'redo size','user commits','user rollbacks'," +
+            "'parse count (total)','parse count (hard)'," +
+            "'physical read total bytes','physical write total bytes')";
 
         Map<String, Object> out = new LinkedHashMap<String, Object>();
         Statement stmt = conn.createStatement();
@@ -99,6 +94,88 @@ public final class OracleCollector implements DbmsCollector {
         return out;
     }
 
+    // ── Compute delta rates from V$SYSSTAT snapshots ──
+
+    public Map<String, Object> computeSysstatDelta(Map<String, Object> curSysstat) {
+        Map<String, Double> cur = toDoubleMap(curSysstat);
+        long nowMs = System.currentTimeMillis();
+        Map<String, Object> rates = new LinkedHashMap<String, Object>();
+
+        if (prevSysstat == null) {
+            prevSysstat = cur;
+            prevSysstatTimestampMs = nowMs;
+            rates.put("Executions Per Sec", 0.0);
+            rates.put("Logical Reads Per Sec", 0.0);
+            rates.put("Physical Reads Per Sec", 0.0);
+            rates.put("Physical Writes Per Sec", 0.0);
+            rates.put("Redo Generated Per Sec", 0.0);
+            rates.put("User Commits Per Sec", 0.0);
+            rates.put("User Rollbacks Per Sec", 0.0);
+            rates.put("Total Parse Count Per Sec", 0.0);
+            rates.put("Hard Parse Count Per Sec", 0.0);
+            rates.put("Buffer Cache Hit Ratio", 0.0);
+            rates.put("Physical Read Total Bytes Per Sec", 0.0);
+            rates.put("Physical Write Total Bytes Per Sec", 0.0);
+            return rates;
+        }
+
+        double elapsedSec = (nowMs - prevSysstatTimestampMs) / 1000.0;
+        if (elapsedSec < 0.5) elapsedSec = 1.0;
+
+        double dExecute = delta(cur, prevSysstat, "execute count");
+        double dLogicalReads = delta(cur, prevSysstat, "session logical reads");
+        double dPhysicalReads = delta(cur, prevSysstat, "physical reads");
+        double dPhysicalWrites = delta(cur, prevSysstat, "physical writes");
+        double dRedoSize = delta(cur, prevSysstat, "redo size");
+        double dCommits = delta(cur, prevSysstat, "user commits");
+        double dRollbacks = delta(cur, prevSysstat, "user rollbacks");
+        double dParseTotal = delta(cur, prevSysstat, "parse count (total)");
+        double dParseHard = delta(cur, prevSysstat, "parse count (hard)");
+        double dReadBytes = delta(cur, prevSysstat, "physical read total bytes");
+        double dWriteBytes = delta(cur, prevSysstat, "physical write total bytes");
+
+        double bufferHit = dLogicalReads > 0 ? (1.0 - dPhysicalReads / dLogicalReads) * 100.0 : 0.0;
+        if (bufferHit < 0) bufferHit = 0.0;
+
+        rates.put("Executions Per Sec", dExecute / elapsedSec);
+        rates.put("Logical Reads Per Sec", dLogicalReads / elapsedSec);
+        rates.put("Physical Reads Per Sec", dPhysicalReads / elapsedSec);
+        rates.put("Physical Writes Per Sec", dPhysicalWrites / elapsedSec);
+        rates.put("Redo Generated Per Sec", dRedoSize / elapsedSec);
+        rates.put("User Commits Per Sec", dCommits / elapsedSec);
+        rates.put("User Rollbacks Per Sec", dRollbacks / elapsedSec);
+        rates.put("Total Parse Count Per Sec", dParseTotal / elapsedSec);
+        rates.put("Hard Parse Count Per Sec", dParseHard / elapsedSec);
+        rates.put("Buffer Cache Hit Ratio", bufferHit);
+        rates.put("Physical Read Total Bytes Per Sec", dReadBytes / elapsedSec);
+        rates.put("Physical Write Total Bytes Per Sec", dWriteBytes / elapsedSec);
+
+        prevSysstat = cur;
+        prevSysstatTimestampMs = nowMs;
+
+        return rates;
+    }
+
+    private static double delta(Map<String, Double> current, Map<String, Double> previous, String key) {
+        Double cur = current.get(key);
+        Double prev = previous.get(key);
+        double c = cur != null ? cur : 0.0;
+        double p = prev != null ? prev : 0.0;
+        double d = c - p;
+        return d >= 0 ? d : 0.0;
+    }
+
+    private static Map<String, Double> toDoubleMap(Map<String, Object> src) {
+        Map<String, Double> out = new LinkedHashMap<String, Double>();
+        for (Map.Entry<String, Object> e : src.entrySet()) {
+            Object v = e.getValue();
+            if (v instanceof Number) {
+                out.put(e.getKey(), ((Number) v).doubleValue());
+            }
+        }
+        return out;
+    }
+
     // ── Cumulative waits from V$SYSTEM_EVENT (fallback) ──
 
     public static List<Map<String, Object>> queryWaits(Connection conn) throws SQLException {
@@ -107,7 +184,7 @@ public final class OracleCollector implements DbmsCollector {
             "       CASE WHEN total_waits > 0 THEN time_waited_micro / total_waits / 1000.0 ELSE 0 END AS avg_wait_ms, " +
             "       time_waited_micro / 1000.0 AS wait_time_ms " +
             "FROM v$system_event " +
-            "WHERE wait_class <> 'Idle' ORDER BY time_waited_micro DESC FETCH FIRST 12 ROWS ONLY";
+            "WHERE wait_class <> 'Idle' ORDER BY time_waited_micro DESC FETCH FIRST 13 ROWS ONLY";
 
         List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
         Statement stmt = conn.createStatement();
@@ -296,17 +373,26 @@ public final class OracleCollector implements DbmsCollector {
             data.put("instance", new LinkedHashMap<String, Object>());
         }
 
+        Map<String, Object> sysmetric;
         try {
-            data.put("sysmetric", querySysmetric(conn));
+            sysmetric = querySysmetric(conn);
         } catch (SQLException e) {
-            data.put("sysmetric", new LinkedHashMap<String, Object>());
+            sysmetric = new LinkedHashMap<String, Object>();
         }
 
+        Map<String, Object> sysstat;
         try {
-            data.put("sysstat", querySysstat(conn));
+            sysstat = querySysstat(conn);
         } catch (SQLException e) {
-            data.put("sysstat", new LinkedHashMap<String, Object>());
+            sysstat = new LinkedHashMap<String, Object>();
         }
+
+        // Compute delta rates from V$SYSSTAT and merge into sysmetric
+        Map<String, Object> deltaRates = computeSysstatDelta(sysstat);
+        sysmetric.putAll(deltaRates);
+
+        data.put("sysmetric", sysmetric);
+        data.put("sysstat", sysstat);
 
         try {
             data.put("waits", queryWaits(conn));
@@ -338,6 +424,7 @@ public final class OracleCollector implements DbmsCollector {
     @SuppressWarnings("unchecked")
     public static Map<String, Object> mapMetricsStatic(Map<String, Object> sysmetric, Map<String, Object> sysstat) {
         Map<String, Object> out = new LinkedHashMap<String, Object>();
+        out.put("host_cpu_util", dbl(sysmetric, "Host CPU Utilization (%)"));
         out.put("active_sessions", dbl(sysmetric, "Average Active Sessions"));
         out.put("sql_exec_per_sec", dbl(sysmetric, "Executions Per Sec"));
         out.put("logical_reads_per_sec", dbl(sysmetric, "Logical Reads Per Sec"));
@@ -358,9 +445,6 @@ public final class OracleCollector implements DbmsCollector {
         out.put("parse_total_per_sec", dbl(sysmetric, "Total Parse Count Per Sec"));
         out.put("hard_parses_per_sec", dbl(sysmetric, "Hard Parse Count Per Sec"));
         out.put("buffer_cache_hit", dbl(sysmetric, "Buffer Cache Hit Ratio"));
-        out.put("execute_count", dbl(sysstat, "execute count"));
-        out.put("session_logical_reads", dbl(sysstat, "session logical reads"));
-        out.put("redo_size", dbl(sysstat, "redo size"));
         return out;
     }
 

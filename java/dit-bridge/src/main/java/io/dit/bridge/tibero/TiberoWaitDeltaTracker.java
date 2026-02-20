@@ -110,8 +110,8 @@ public final class TiberoWaitDeltaTracker implements WaitDeltaTracker {
             }
         });
 
-        if (results.size() > 12) {
-            results = new ArrayList<Map<String, Object>>(results.subList(0, 12));
+        if (results.size() > 13) {
+            results = new ArrayList<Map<String, Object>>(results.subList(0, 13));
         }
 
         prevSnapshot = current;
