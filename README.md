@@ -82,36 +82,42 @@ GRANT ALTER SYSTEM TO <monitoring user>;                -- kill session 용 (선
 Lanterna Screen 기반 대시보드. Load Profile 스파크라인, 실시간 Wait 델타, 활성 세션, Top SQL:
 
 ```text
-DIT | DEV@single19cfs | 19.0.0.0.0 | Collected: 18:19:13
-┌─ Load Profile ────────────────────────────────────────────────────────────────┐┌─ Top Waits (Real-time) ───────────────────────────────────────────────────────┐
-│ Host CPU %        45.3                                                        ││ Wait Event                                             Avg(ms)    Wait Time(s)│
-│ Active Sessions   13.97           ▄▄▄▄▄▄▄▄▄▄▄▁▁   ▁▁▄▄▄▄▄▄▄▄▄▄▄▄▄▂▂   ▃▃██    ││ log file sync                                          11.43      11.87       │
-│ DB Time/s         1,397.42        ▄▄▄▄▄▄▄▄▄▄▄▁▁   ▁▁▄▄▄▄▄▄▄▄▄▄▄▄▄▂▂   ▃▃██    ││ log file parallel write                                6.82       1.63        │
-│ CPU Time/s        86.69 (6%)              ▆▆▆▆▆▆▆▆▆▆▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ LGWR any worker group                                  3.81       0.72        │
-│ Wait Time/s       1,310.73 (94%)  ▄▄▄▄▄▄▄▄▃▃▃▁▁     ▃▃▃▄▄▄▄▄▄▄▃▃▃▁▁   ▂▂██    ││ LGWR all worker groups                                 6.08       0.21        │
-│ Logical Reads/s   421,161         ▂▃▃▃▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││ db file scattered read                                 1.77       0.10        │
-│ Tran/s            438                     ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ db file sequential read                                0.62       0.07        │
-│ SQL Exec/s        28,670          ▂▃▃▃▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││ LGWR worker group ordering                             1.50       0.06        │
-│ Parse Total/s     886                     ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ library cache: mutex X                                 4.83       0.01        │
-│ Hard Parse/s      0               ████████                                    ││ control file parallel write                            8.87       0.01        │
-│ Phy Reads/s       636             █▄▄▄▃▃▂▂▂▂▂▁▁     ▁▁▁                       ││ buffer busy waits                                      0.52       0.00        │
-│ Phy Read MB/s     2.63            ▅▅▅▅▅▅▅▅██████████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁      ││ SQL*Net message to client                              0.00       0.00        │
-│ Phy Write MB/s    2.63                    ▅▅▅▅▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄██████████▄▄    ││ cursor: pin S                                          1.19       0.00        │
-│ Redo MB/s         5.74            ▂▂▂▂▃▃▄▄▅▅▅▄▄   ▃▃▆▆▆▅▅▅▅▅▅▅▅▅▅▃▃   ▂▂██    ││                                                                              │
-└───────────────────────────────────────────────────────────────────────────────┘└───────────────────────────────────────────────────────────────────────────────┘
-┌─ Sessions (16) ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ SID    Serial  User        Status    Wait Event                  WClass      Blk  SQL ID         Wait(s) Program         SQL Text                              │
-│ 16     34533   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
-│ 402    14785   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.updateCustomer │
-│ 20     35420   SOE         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien BEGIN :1 := orderentry.neworder(:2 ,: │
-└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-┌─ Top SQL (10 min) ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ SQL ID         Plan Hash    Ela(s)/Exec  Elapsed(s)  CPU(s)    Execs     Gets      Gets/Exec  SQL Text                                                         │
-│ 0w2qpuc6u2zsp  0            0.003        282.2       121.9     82.3K     44.6M     542        BEGIN :1 := orderentry.neworder(:2 ,:3 ,:4 ); END;               │
-│ f7rxuxzt64k87  0            0.000        89.6        14.3      248.7K    3.9M      16         INSERT INTO ORDER_ITEMS ( ORDER_ID, LINE_ITEM_ID, ...            │
-│ 147a57cxq3w5y  0            0.001        84.7        65.2      102.2K    12.4M     122        BEGIN :1 := orderentry.browseproducts(:2 ,:3 ,:4 ); END;         │
-└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: 6s  Collect: 156ms
+DIT | DEV@single19cfs | 19.0.0.0.0 | Collected: 15:46:32
+┌─ Load Profile ─────────────────────────────────────────────────────────────┐┌─ Top Waits (Real-time) ─────────────────────────────────────────────────────┐
+│ Host CPU %        22.8            ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▂▃▃▃▂▂▂▂▂▂▂▂▂▂  ▁▁███▂ ││ Wait Event                                           Avg(ms)    Wait Time(s)│
+│ Active Sessions   30.04           ▁▁▁▁   ▁▁▁▁▁▁▁▁▁▁▁▁▅▅▅▅▅▅▅▅▅▅▅▅▅    ▆▆▆█ ││ log file sync                                        12.62      29.31       │
+│ DB Time/s         3,003.72        ▁▁▁▁   ▁▁▁▁▁▁▁▁▁▁▁▁▅▅▅▅▅▅▅▅▅▅▅▅▅    ▆▆▆█ ││ log file parallel write                              7.74       1.70        │
+│ CPU Time/s        53.26 (2%)      ▃▃▃▃▃▃▃▃▃          ▃▃▃▃▃▃▃▃▃▃▇▇▇▇▇▇▇▇▇▇█ ││ LGWR any worker group                                4.27       0.78        │
+│ Wait Time/s       2,950.45 (98%)  ▁▁▁▁   ▁▁▁▁▁▁▁▁▁▁▁▁▅▅▅▅▅▅▅▅▅▅▅▅▅    ▆▆▆█ ││ LGWR all worker groups                               6.28       0.18        │
+│ Logical Reads/s   23,887          ▁▁   ▁▁▁▁▁▁▁▁▁▁ ▁▃▃▂▃▃▃▂▃▃▂▃▃▁    ▄▇█▃▃▃ ││ LGWR worker group ordering                           1.56       0.07        │
+│ Tran/s            2,340           ▁▁   ▁▁▁▁▁▁▁▁▁▁ ▁▃▃▂▃▃▃▂▂▂▂▃▃▁    ▄▇█▃▃▃ ││ db file async I/O submit                             11.87      0.07        │
+│ SQL Exec/s        3,920           ▁▁   ▁▁▁▁▁▁▁▁▁▁ ▁▃▃▂▃▃▃▂▂▃▂▃▃▁    ▄▇█▃▃▃ ││ buffer busy waits                                    0.17       0.03        │
+│ Parse Total/s     3,919           ▁▁   ▁▁▁▁▁▁▁▁▁▁ ▁▃▃▂▃▃▃▂▂▃▂▃▃▁    ▄▇█▃▃▃ ││ control file parallel write                          9.56       0.03        │
+│ Hard Parse/s      0                                        ▇           █   ││ latch: cache buffers chains                          0.16       0.01        │
+│ Phy Reads/s       0                               ▁       ▆█        ▁      ││ SQL*Net message to client                            0.00       0.00        │
+│ Phy Read MB/s     0.11                     ▁              ▆█   ▁         ▁ ││ db file single write                                 3.90       0.00        │
+│ Phy Write MB/s    3.99            ▁▁   ▁▁▁▁▁▁▁▁▁▁ ▁▂▂▄▃▃▃▃▄▃▄▄▃▂    ▄▇█▃▃▄ ││ latch: enqueue hash chains                           0.65       0.00        │
+│ Redo MB/s         2.95            ▁▁   ▁▁▁▁▁▁▁▁▁▁ ▁▃▃▃▃▃▃▂▃▃▂▃▃▁    ▄▇█▃▃▃ ││ cursor: pin S                                        1.08       0.00        │
+└────────────────────────────────────────────────────────────────────────────┘└─────────────────────────────────────────────────────────────────────────────┘
+┌─ Sessions (30) ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SID    Serial  User        Status    Wait Event                  WClass      Blk  SQL ID         Wait(s) Program         SQL Text                         │
+│ 2      44023   APP         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien UPDATE LOAD_TEST SET VALUE_COL = │
+│ 412    32733   APP         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien UPDATE LOAD_TEST SET VALUE_COL = │
+│ 24     46011   APP         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien DELETE FROM LOAD_TEST WHERE ID = │
+│ 29     48539   APP         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien UPDATE LOAD_TEST SET VALUE_COL = │
+│ 31     37448   APP         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien DELETE FROM LOAD_TEST WHERE ID = │
+│ 39     24007   APP         ACTIVE    log file sync               Commit      5    -              0       JDBC Thin Clien DELETE FROM LOAD_TEST WHERE ID = │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+┌─ Top SQL (10 min) ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SQL ID         Plan Hash    Elapsed(s)   Ela(s)/Exec  CPU(s)     Execs     Gets       Gets/Exec  SQL Text                                                 │
+│ 530u0m36cx23p  3418750106   70           0.000        25         579.3K    5.8M       10         DELETE FROM LOAD_TEST WHERE ID = :1                      │
+│ gmh99f26fu48c  2432944345   65           0.000        34         579.4K    4.7M       8          INSERT INTO LOAD_TEST (ID, THREAD_ID, VALUE_COL, RANDOM_ │
+│ 0d1xmhavvz7td  3371350541   37           0.000        20         579.3K    3.0M       5          UPDATE LOAD_TEST SET VALUE_COL = :1 , UPDATED_AT = SYSTI │
+│ 2hd8pmd24x9w2  1234739299   31           0.000        10         579.1K    2.2M       4          SELECT ID, THREAD_ID, VALUE_COL FROM LOAD_TEST WHERE ID  │
+│ cfp05p0vvtc3s  4257653928   10           0.000        7          579.4K    0          0          SELECT LOAD_TEST_SEQ.CURRVAL FROM DUAL                   │
+│ azt6dq6t89u2w  0            6            1.035        3          6         148.5K     24.7K      BEGIN       DBMS_WORKLOAD_REPOSITORY.CREATE_SNAPSHOT('TY │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+Q:Quit  Up/Down:Navigate  PgUp/PgDn:Scroll | Interval: 6s  Collect: 60ms
 ```
 
 ## 키 바인딩
