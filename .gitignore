@@ -10,6 +10,8 @@ java/dit-bridge/target/
 java/dit-bridge/logs/
 
 # IDE
+.vscode/
+.idea/
 java/dit-bridge/.classpath
 java/dit-bridge/.project
 java/dit-bridge/.settings/
@@ -31,4 +33,9 @@ logs/
 # Legacy / reference only
 .termdb/
 references/
+
+# Temp / backup files
+*.zip
+*.log
+diff.txt
 

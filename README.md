@@ -220,6 +220,8 @@ mvn clean package -f java/dit-bridge/pom.xml
 - **JAR 파일명 버전 포함**: 빌드 출력 파일명이 `dit-dbms-monitor-0.1.2.jar` 형태로 변경
 - **Tibero V$OSSTAT → V$OSSTAT2**: Tibero에는 V$OSSTAT이 없어 V$OSSTAT2로 수정 (Tibero 6 FS06+)
 - **Tibero Sessions READY 제외**: STATUS='READY' 세션을 활성 세션 목록에서 필터링
+- **TUI 레이아웃 조정**: Sessions 패널 5줄 축소, Top SQL 패널 4줄 확대
+- **Top SQL 하단 border 잘림 수정**: maxSqlVisible 계산에서 bottom border를 미차감하여 마지막 데이터 행이 border를 덮어쓰는 버그 수정
 
 ### v0.1.1
 

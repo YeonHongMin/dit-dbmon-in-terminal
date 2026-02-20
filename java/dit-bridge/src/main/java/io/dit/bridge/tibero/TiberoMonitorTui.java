@@ -302,7 +302,7 @@ public final class TiberoMonitorTui {
 
         // ── Sessions Panel ──
         List<Map<String, Object>> sessions = (List<Map<String, Object>>) data.get("sessions");
-        int sessRows = Math.max(6, h - row - 16);
+        int sessRows = Math.max(6, h - row - 20);
         drawBox(screen, row, 0, w, sessRows + 2, "Sessions (" + (sessions != null ? sessions.size() : 0) + ")",
                 BORDER_FG);
 
@@ -363,7 +363,7 @@ public final class TiberoMonitorTui {
         sqlR++;
 
         if (sqlList != null) {
-            int maxSqlVisible = sqlPanelH - 2;
+            int maxSqlVisible = sqlPanelH - 3;
             for (int i = 0; i < maxSqlVisible && (sqlScroll + i) < sqlList.size(); i++) {
                 Map<String, Object> sq = sqlList.get(sqlScroll + i);
                 double elapsedSec = dbl(sq.get("elapsed_time")) / 1000000.0;
