@@ -13,7 +13,7 @@ DIT (DBmon-In-Terminal)는 SSH 터미널 환경에서 Oracle / Tibero DB를 실�
 | TUI | Lanterna (Screen layer) | 3.1.3 |
 | Oracle 드라이버 | ojdbc8 | 23.3.0.23.09 |
 | Tibero 드라이버 | tibero7-jdbc | 7.0 |
-| 패키지 | `io.dit.bridge` | 0.1.0 |
+| 패키지 | `io.dit.bridge` | 0.1.1 |
 | 배포 형태 | Fat JAR (의존성 포함) | - |
 
 ### 설계 제약

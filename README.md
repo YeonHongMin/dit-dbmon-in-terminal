@@ -11,18 +11,22 @@ SSH 터미널 환경에서 Oracle / Tibero DB를 실시간 모니터링하는 Ja
 
 ## 빠른 시작
 
+> **💡 Windows 환경 실행 주의사항**
+> Windows에서 TUI 모드(`--command tui`)를 실행할 때는 터미널 I/O 충돌을 방지하기 위해 `java` 대신 **`javaw`** 명령어를 사용해야 합니다.
+> 예시: `javaw -jar java/dit-bridge/target/dit-dbms-monitor.jar ...`
+
 ```bash
 # 빌드
 mvn clean package -f java/dit-bridge/pom.xml
 
-# Oracle TUI
+# Oracle TUI (Windows는 javaw 사용)
 java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type oracle --command tui \
   --host <db-host> --port 1521 \
   --service-name <service> \
   --user <monitoring user> --password <user password>
 
-# Tibero TUI
+# Tibero TUI (Windows는 javaw 사용)
 java -jar java/dit-bridge/target/dit-dbms-monitor.jar \
   --dbms-type tibero --command tui \
   --host <db-host> --port 8629 \
@@ -155,7 +159,7 @@ java -jar dit-dbms-monitor.jar --dbms-type oracle --command sql ...
 java -jar dit-dbms-monitor.jar --dbms-type oracle --command monitor \
   --interval-seconds 5 --record-file run.jsonl --capture-file screen.txt ...
 
-# TUI 대시보드
+# TUI 대시보드 (Windows는 javaw 사용)
 java -jar dit-dbms-monitor.jar --dbms-type oracle --command tui --interval 6 ...
 
 # 세션 강제 종료
@@ -211,4 +215,4 @@ mvn clean package -f java/dit-bridge/pom.xml
 | TUI | Lanterna (Screen layer) | 3.1.3 |
 | Oracle 드라이버 | ojdbc8 | 23.3.0.23.09 |
 | Tibero 드라이버 | tibero7-jdbc | 7.0 |
-| 패키지 | `io.dit.bridge` | 0.1.0 |
+| 패키지 | `io.dit.bridge` | 0.1.1 |

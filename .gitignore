@@ -1,0 +1,34 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Java build artifacts
+java/dit-bridge/target/
+java/dit-bridge/logs/
+
+# IDE
+java/dit-bridge/.classpath
+java/dit-bridge/.project
+java/dit-bridge/.settings/
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Logs
+logs/
+
+# Binaries
+*.jar
+!java/dit-bridge/lib/*.jar
+
+# DIT runtime
+.dit/
+
+# Legacy / reference only
+.termdb/
+references/
+

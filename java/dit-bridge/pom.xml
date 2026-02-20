@@ -5,7 +5,7 @@
 
   <groupId>io.dit</groupId>
   <artifactId>dit-dbms-monitor</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <packaging>jar</packaging>
 
   <name>dit-dbms-monitor</name>
@@ -68,7 +68,6 @@
             </goals>
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
-              <finalName>dit-dbms-monitor</finalName>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>io.dit.bridge.DitMain</mainClass>
